@@ -1,0 +1,73 @@
+/* Menu.css */
+
+.menu {
+  background-color: #333;
+  overflow: hidden;
+}
+
+.menu-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.menu-logo h1 {
+  color: #fff;
+  margin: 0;
+}
+
+.menu-icon {
+  display: none;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.menu-links {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.menu-links li {
+  margin-left: 20px;
+}
+
+.menu-links li a {
+  color: #fff;
+  text-decoration: none;
+  padding: 8px;
+}
+
+.menu-links li a:hover {
+  background-color: #575757;
+  border-radius: 4px;
+}
+
+/* Estilos para dispositivos móviles */
+@media screen and (max-width: 768px) {
+  .menu-icon {
+    display: block;
+  }
+
+  .menu-links {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background-color: #333;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+  }
+
+  .menu-links.open {
+    display: flex;
+  }
+
+  .menu-links li {
+    margin: 10px 0;
+  }
+}
