@@ -3,12 +3,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { ArticulosContext } from '../context/ArticulosContext';
 import { FormasPagoContext } from '../context/FormasPagoContext';
 import { TicketsContext } from '../context/TicketsContext';
+import { UsuariosContext } from '../context/UsuariosContext'; // Nuevo contexto
 import './Ventas.css';
 
 function Ventas() {
   const { articulos } = useContext(ArticulosContext);
   const { formasPago } = useContext(FormasPagoContext);
   const { setTickets } = useContext(TicketsContext);
+  const { usuarios } = useContext(UsuariosContext); // Lista de vendedores
 
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
@@ -20,6 +22,7 @@ function Ventas() {
   const [ventaFinalizada, setVentaFinalizada] = useState(false);
   const [formaPagoSeleccionada, setFormaPagoSeleccionada] = useState('');
   const [mensajeError, setMensajeError] = useState('');
+  const [vendedorSeleccionado, setVendedorSeleccionado] = useState(''); // Vendedor seleccionado
 
   // Filtrar artículos según la búsqueda
   const articulosFiltrados = articulos.filter(
@@ -126,7 +129,6 @@ function Ventas() {
     setPrecio('');
     setPeso('');
   };
-
   // Manejar eventos de teclado
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -211,6 +213,7 @@ function Ventas() {
       articulos: listaSeleccionados,
       total: totalAcumulado,
       formaPago,
+      vendedor: vendedorSeleccionado, // Agregar vendedor al ticket
       fecha: new Date(),
     };
     setTickets((prev) => [...prev, nuevoTicket]);
@@ -249,9 +252,8 @@ function Ventas() {
         </button>
       </div>
     );
-  }
+  };
 
-  // Renderizar la sección de ventas
   return (
     <div className="ventas">
       <h3 className="header-title">Seleccionar Artículos</h3>
@@ -259,8 +261,22 @@ function Ventas() {
       <div className="total-container">
         <h4>Cantidad de Artículos: {cantidadArticulos}</h4>
         <h4>Total Acumulado: ${totalAcumulado.toFixed(2)}</h4>
+        <div className="vendedor-container">
+          <label htmlFor="vendedor">Vendedor:</label>
+          <select
+            id="vendedor"
+            value={vendedorSeleccionado}
+            onChange={(e) => setVendedorSeleccionado(e.target.value)}
+          >
+            <option value="">Seleccionar vendedor</option>
+            {usuarios.map((usuario) => (
+              <option key={usuario} value={usuario}>
+                {usuario}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-
       {mensajeError && (
         <div className="mensaje-error">
           <p>{mensajeError}</p>
