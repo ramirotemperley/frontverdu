@@ -1,14 +1,21 @@
-// Ventas.jsx
-import React, { useState, useEffect, useContext } from 'react';
+// src/components/Ventas.jsx
+
+import './Ventas.css';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { ArticulosContext } from '../context/ArticulosContext';
 import { FormasPagoContext } from '../context/FormasPagoContext';
 import { TicketsContext } from '../context/TicketsContext';
-import './Ventas.css';
+import { UsuariosContext } from '../context/UsuariosContext';
+import ResumenVenta from './ResumenVenta';
+import VistaPreviaArticulo from './VistaPreviaArticulo';
+import ListaArticulosSeleccionados from './ListaArticulosSeleccionados';
+import VoiceInput from './VoiceInput';
 
 function Ventas() {
   const { articulos } = useContext(ArticulosContext);
-  const { formasPago } = useContext(FormasPagoContext);
+  const { formasPago } = useContext(FormasPagoContext); 
   const { setTickets } = useContext(TicketsContext);
+  const { usuarios, setUsuarios } = useContext(UsuariosContext);
 
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
@@ -16,147 +23,221 @@ function Ventas() {
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [precio, setPrecio] = useState('');
   const [peso, setPeso] = useState('');
-  const [pasoActual, setPasoActual] = useState(0); // 0: búsqueda, 1: precio, 2: peso
-  const [ventaFinalizada, setVentaFinalizada] = useState(false);
+  const [pasoActual, setPasoActual] = useState(0);
   const [formaPagoSeleccionada, setFormaPagoSeleccionada] = useState('');
   const [mensajeError, setMensajeError] = useState('');
+  const [vendedorSeleccionado, setVendedorSeleccionado] = useState(
+    localStorage.getItem('ultimoVendedor') || 'Vendedor 1'
+  );
+  const [cursor, setCursor] = useState(0);
 
-  // Filtrar artículos según la búsqueda
+  const pesoInputRef = useRef(null);
+
+  const [mostrandoSeleccionPago, setMostrandoSeleccionPago] = useState(false);
+
+  const [fromVoice, setFromVoice] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (!usuarios || usuarios.length === 0) {
+      setUsuarios(['Vendedor 1', 'Vendedor 2', 'Vendedor 3']);
+    }
+  }, [usuarios, setUsuarios]);
+
+  useEffect(() => {
+    localStorage.setItem('ultimoVendedor', vendedorSeleccionado);
+  }, [vendedorSeleccionado]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (pasoActual === 1 && fromVoice) {
+      console.log('Iniciando temporizador de 5s por haber ingresado por voz en pasoActual=1');
+      timerRef.current = setTimeout(() => {
+        console.log('Pasaron 5 segundos sin acción tras ingreso por voz');
+        // No chequeamos seleccionado y precio por ahora para simplificar
+        if (pasoActual === 1 && fromVoice) {
+          console.log('Agregando artículo automáticamente sin peso por timeout');
+          handleAgregarArticulo(true);
+          document.getElementById('busqueda-input')?.focus();
+          setPasoActual(0);
+          setFromVoice(false);
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [pasoActual, fromVoice]); 
+
+  const handleBusquedaChange = (e) => {
+    setBusqueda(e.target.value);
+    setMostrarDropdown(true);
+    console.log('Cambio en búsqueda:', e.target.value);
+  };
+
   const articulosFiltrados = articulos.filter(
     (art) =>
       art.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       art.codigo.startsWith(busqueda)
   );
 
-  // Función para calcular el total basado en precio y peso
-  const totalCalculado = (precioParam, pesoParam) => {
-    const precioNumerico = precioParam || parseFloat(precio) || 0;
-    let pesoNumerico = pesoParam || parseFloat(peso);
+  console.log('Artículos filtrados:', articulosFiltrados);
 
-    let pesoEnKg = pesoNumerico;
-    let unidadPeso = 'kg';
-
-    // Si el peso no es válido, se asigna 1 kg por defecto
-    if (
-      isNaN(pesoNumerico) ||
-      pesoNumerico <= 0 ||
-      pesoParam === null ||
-      peso === ''
-    ) {
-      pesoNumerico = 1;
-      pesoEnKg = 1;
-      unidadPeso = null;
-    } else {
-      if (pesoNumerico >= 50) {
-        pesoEnKg = pesoNumerico / 1000;
-        unidadPeso = 'g';
-      } else {
-        unidadPeso = 'kg';
-      }
-    }
-
-    return {
-      total: precioNumerico * pesoEnKg,
-      pesoEnKg,
-      unidadPeso,
-      pesoNumerico,
-    };
-  };
-
-  // Manejar cambios en la búsqueda
-  const handleBusquedaChange = (e) => {
-    setBusqueda(e.target.value);
-    setMostrarDropdown(true);
-  };
-
-  // Manejar la selección de un artículo
   const handleSeleccionarArticulo = (articulo) => {
-    if (articulo.nombre === 'Terminar') {
-      if (listaSeleccionados.length === 0) {
-        setMensajeError('No hay artículos en la venta para finalizar.');
+    if (articulo) {
+      if (articulo.codigo === '999' || articulo.nombre === '999') {
+        setMostrandoSeleccionPago(true);
+        setSeleccionado(null);
+        setBusqueda('');
+        setMostrarDropdown(false);
+        setCursor(0);
+        setPasoActual(0);
+        setFromVoice(false);
+        console.log('Seleccionado artículo 999: seleccionando forma de pago');
         return;
       }
-      setVentaFinalizada(true);
-      setSeleccionado(null);
-      setBusqueda('');
-      setPasoActual(0);
-    } else {
+
       setSeleccionado(articulo);
       setMostrarDropdown(false);
       setBusqueda('');
+      setCursor(0);
       setPasoActual(1);
+      setMensajeError('');
+      setFromVoice(false); // Selección manual
+      console.log('Seleccionado artículo:', articulo.nombre);
+
+      setTimeout(() => {
+        document.getElementById('precio-input')?.focus();
+      }, 100);
     }
   };
 
-  // Confirmar la selección del artículo con precio y peso
-  const handleConfirmarSeleccion = () => {
-    const precioNumerico = parseFloat(precio);
-    if (isNaN(precioNumerico) || precioNumerico <= 0) {
-      setMensajeError('Por favor, ingresa un precio válido.');
-      return;
-    }
-
-    let pesoNumerico = parseFloat(peso);
-
-    // Si el peso no es válido, se asigna 1 y se marca como predeterminado
-    let pesoPredeterminado = false;
-    if (isNaN(pesoNumerico) || pesoNumerico <= 0 || peso === '') {
-      pesoNumerico = 1;
-      pesoPredeterminado = true;
-    }
-
-    setMensajeError('');
-
-    const { total, unidadPeso } = totalCalculado(precioNumerico, pesoNumerico);
-
-    setListaSeleccionados((prev) => [
-      ...prev,
-      {
-        ...seleccionado,
-        precio: precioNumerico,
-        peso: pesoPredeterminado ? null : pesoNumerico,
-        total,
-        unidadPeso,
-      },
-    ]);
-
-    setSeleccionado(null);
-    setPasoActual(0);
-    setBusqueda('');
-    setPrecio('');
-    setPeso('');
-  };
-
-  // Manejar eventos de teclado
-  const handleKeyDown = (e) => {
+  const handleKeyDownBusqueda = (e) => {
     if (e.key === 'Enter') {
-      if (pasoActual === 0) {
-        if (articulosFiltrados.length > 0) {
-          handleSeleccionarArticulo(articulosFiltrados[0]);
-        } else {
-          // Usar "Verdulería" como artículo por defecto
-          const articuloVerduleria = articulos.find(
-            (art) => art.nombre === 'Verdulería'
-          );
-          if (articuloVerduleria) {
-            handleSeleccionarArticulo(articuloVerduleria);
-          } else {
-            setMensajeError('No se encontró el artículo "Verdulería".');
-          }
-        }
-      } else if (pasoActual === 1) {
-        setPasoActual(2);
-      } else if (pasoActual === 2) {
-        handleConfirmarSeleccion();
+      e.preventDefault();
+      if (busqueda === '999') {
+        setMostrandoSeleccionPago(true);
+        setSeleccionado(null);
+        setBusqueda('');
+        setMostrarDropdown(false);
+        setCursor(0);
+        setPasoActual(0);
+        setFromVoice(false);
+        console.log('Ingreso directo "999": seleccionando forma de pago');
+      } else if (mostrarDropdown && articulosFiltrados.length > 0) {
+        handleSeleccionarArticulo(articulosFiltrados[cursor] || { nombre: 'Verdulería' });
+      } else {
+        handleSeleccionarArticulo({ nombre: 'Verdulería' });
+      }
+    } else if (mostrarDropdown && articulosFiltrados.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setCursor((prevCursor) => (prevCursor + 1) % articulosFiltrados.length);
+        console.log('Navegando hacia abajo en el dropdown:', (cursor + 1) % articulosFiltrados.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setCursor((prevCursor) =>
+          prevCursor === 0 ? articulosFiltrados.length - 1 : prevCursor - 1
+        );
+        console.log('Navegando hacia arriba en el dropdown:', cursor === 0 ? articulosFiltrados.length - 1 : cursor - 1);
       }
     }
   };
 
-  // Cerrar el dropdown al hacer clic fuera
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      console.log('Enter presionado en pasoActual:', pasoActual);
+
+      // El usuario interactuó manualmente => cancelar modo voz
+      setFromVoice(false);
+
+      if (pasoActual === 1) {
+        if (!precio || isNaN(precio) || parseFloat(precio) <= 0) {
+          setMensajeError('Por favor, ingresa un precio válido.');
+          document.getElementById('precio-input')?.focus();
+          console.log('Precio inválido');
+          return;
+        }
+
+        document.getElementById('peso-input')?.focus();
+        setPasoActual(2);
+        console.log('Paso a peso');
+      } else if (pasoActual === 2) {
+        if (!peso) {
+          handleAgregarArticulo(true);
+          document.getElementById('busqueda-input')?.focus();
+          setPasoActual(0);
+          console.log('Peso opcional no ingresado: artículo agregado sin peso');
+          return;
+        }
+
+        if (isNaN(peso) || parseFloat(peso) <= 0) {
+          setMensajeError('Por favor, ingresa un peso válido.');
+          document.getElementById('peso-input')?.focus();
+          console.log('Peso inválido');
+          return;
+        }
+
+        handleAgregarArticulo(false);
+        document.getElementById('busqueda-input')?.focus();
+        setPasoActual(0);
+        console.log('Artículo agregado con peso');
+      }
+    }
+  };
+
+  const handleAgregarArticulo = (pesoOpcional) => {
+    if (!precio) {
+      setMensajeError('Debe ingresar un precio válido.');
+      console.log('Precio faltante al agregar artículo');
+      return;
+    }
+
+    const pesoNumerico = parseFloat(peso);
+    let unidadPeso = null;
+    let pesoEnKg = null;
+
+    if (pesoNumerico && pesoNumerico > 0) {
+      if (pesoNumerico >= 50) {
+        unidadPeso = 'g';
+        pesoEnKg = pesoNumerico / 1000;
+      } else {
+        unidadPeso = 'kg';
+        pesoEnKg = pesoNumerico;
+      }
+    }
+
+    const articulo = {
+      ...seleccionado,
+      precio: parseFloat(precio),
+      peso: pesoOpcional && !peso ? '-' : (pesoNumerico ? pesoNumerico : '-'),
+      unidadPeso: pesoOpcional && !peso ? '-' : (unidadPeso ? unidadPeso : '-'),
+      total: pesoEnKg ? parseFloat(precio) * pesoEnKg : parseFloat(precio),
+    };
+
+    setListaSeleccionados((prev) => [...prev, articulo]);
+    setSeleccionado(null);
+    setPrecio('');
+    setPeso('');
+    setMensajeError('');
+    console.log('Artículo agregado:', articulo);
+  };
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.dropdown') && !e.target.closest('.input-container')) {
         setMostrarDropdown(false);
+        console.log('Clic fuera del dropdown: cerrando dropdown');
       }
     };
 
@@ -166,100 +247,75 @@ function Ventas() {
     };
   }, []);
 
-  // Enfocar el input correspondiente según el paso actual
   useEffect(() => {
     if (pasoActual === 0) {
-      document.getElementById('busqueda-input')?.focus();
+      const busq = document.getElementById('busqueda-input');
+      if (busq) busq.focus();
+      console.log('Enfocando en búsqueda');
     } else if (pasoActual === 1) {
-      document.getElementById('precio-input')?.focus();
+      const preInput = document.getElementById('precio-input');
+      if (preInput) preInput.focus();
+      console.log('Enfocando en precio');
     } else if (pasoActual === 2) {
-      document.getElementById('peso-input')?.focus();
+      const pInput = document.getElementById('peso-input');
+      if (pInput) pInput.focus();
+      console.log('Enfocando en peso');
     }
   }, [pasoActual]);
 
-  // Eliminar un artículo de la lista
-  const handleEliminar = (index) => {
-    setListaSeleccionados((prev) => prev.filter((_, i) => i !== index));
-  };
+  useEffect(() => {
+    if (mostrarDropdown) {
+      const dropdown = document.querySelector('.dropdown');
+      if (dropdown) {
+        dropdown.style.zIndex = '1000';
+        console.log('Mostrando dropdown');
+      }
+    }
+  }, [mostrarDropdown]);
 
-  // Editar un artículo de la lista
-  const handleEditar = (index) => {
-    const articuloAEditar = listaSeleccionados[index];
-    setSeleccionado(articuloAEditar);
-    setPrecio(articuloAEditar.precio.toString());
-    setPeso(
-      articuloAEditar.peso !== null ? articuloAEditar.peso.toString() : ''
-    );
-    handleEliminar(index);
-    setPasoActual(1);
-  };
-
-  // Calcular el total acumulado de la venta
   const totalAcumulado = listaSeleccionados.reduce(
-    (total, articulo) => total + articulo.total,
+    (total, articulo) => total + (articulo.total || 0),
     0
   );
 
   const cantidadArticulos = listaSeleccionados.length;
 
-  const { total, unidadPeso } = totalCalculado();
+  const handleFinalizarVenta = () => {
+    if (!formaPagoSeleccionada) {
+      alert('Por favor, selecciona una forma de pago.');
+      console.log('Forma de pago no seleccionada');
+      return;
+    }
 
-  // Finalizar la venta seleccionando la forma de pago
-  const finalizarVenta = (formaPago) => {
     const nuevoTicket = {
       id: Date.now(),
       articulos: listaSeleccionados,
       total: totalAcumulado,
-      formaPago,
+      formaPago: formaPagoSeleccionada,
+      vendedor: vendedorSeleccionado,
       fecha: new Date(),
     };
     setTickets((prev) => [...prev, nuevoTicket]);
     setListaSeleccionados([]);
-    setVentaFinalizada(false);
     setFormaPagoSeleccionada('');
     setPasoActual(0);
+    console.log('Venta finalizada:', nuevoTicket);
   };
 
-  // Cancelar la finalización de la venta y regresar a la selección de artículos
-  const cancelarFinalizacion = () => {
-    setVentaFinalizada(false);
+  const handleClickFinalizarVenta = () => {
+    setMostrandoSeleccionPago(true);
+    console.log('Seleccionando forma de pago');
   };
 
-  // Renderizar la selección de forma de pago si la venta está finalizada
-  if (ventaFinalizada) {
-    return (
-      <div className="seleccion-forma-pago">
-        <h2>Detalle de la Venta</h2>
-        <p>
-          <strong>Cantidad de Artículos:</strong> {cantidadArticulos}
-        </p>
-        <p>
-          <strong>Total a Pagar:</strong> ${totalAcumulado.toFixed(2)}
-        </p>
-        <h3>Seleccione la Forma de Pago</h3>
-        <ul>
-          {formasPago.map((fp, index) => (
-            <li key={index}>
-              <button onClick={() => finalizarVenta(fp)}>{fp}</button>
-            </li>
-          ))}
-        </ul>
-        <button onClick={cancelarFinalizacion} className="volver-button">
-          Volver a la Venta
-        </button>
-      </div>
-    );
-  }
-
-  // Renderizar la sección de ventas
   return (
     <div className="ventas">
-      <h3 className="header-title">Seleccionar Artículos</h3>
-
-      <div className="total-container">
-        <h4>Cantidad de Artículos: {cantidadArticulos}</h4>
-        <h4>Total Acumulado: ${totalAcumulado.toFixed(2)}</h4>
-      </div>
+      <ResumenVenta
+        cantidadArticulos={cantidadArticulos}
+        totalAcumulado={Number(totalAcumulado) || 0}
+        vendedores={usuarios}
+        vendedorSeleccionado={vendedorSeleccionado}
+        setVendedorSeleccionado={setVendedorSeleccionado}
+      />
 
       {mensajeError && (
         <div className="mensaje-error">
@@ -267,129 +323,134 @@ function Ventas() {
         </div>
       )}
 
-      <div className="input-container">
-        <input
-          id="busqueda-input"
-          type="text"
-          placeholder="Código o nombre del artículo"
-          value={busqueda}
-          onChange={handleBusquedaChange}
-          onKeyDown={handleKeyDown}
-          className="input"
-          autoComplete="off"
-        />
-        {mostrarDropdown && articulosFiltrados.length > 0 && (
-          <ul className="dropdown">
-            {articulosFiltrados.map((articulo) => (
-              <li
-                key={articulo.codigo + articulo.nombre}
-                onClick={() => handleSeleccionarArticulo(articulo)}
-                className="dropdown-item"
-              >
-                {articulo.nombre}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {!mostrandoSeleccionPago && (
+        <>
+          <VoiceInput
+            articulos={articulos}
+            setSeleccionado={setSeleccionado}
+            setPrecio={setPrecio}
+            setPasoActual={setPasoActual}
+            pesoInputRef={pesoInputRef}
+            setBusqueda={setBusqueda}
+            setMostrarDropdown={setMostrarDropdown}
+            setCursor={setCursor}
+            setMensajeError={setMensajeError}
+            setFromVoice={setFromVoice}
+          />
 
-      {pasoActual > 0 && (
-        <div className="input-section">
-          <div className="inputs">
+          <div className="input-container">
             <input
-              id="precio-input"
-              type="number"
-              placeholder="Precio"
-              value={precio}
-              onChange={(e) => setPrecio(e.target.value)}
-              onKeyDown={handleKeyDown}
+              id="busqueda-input"
+              type="text"
+              inputMode="text"
+              placeholder="Código o nombre del artículo"
+              value={busqueda}
+              onChange={handleBusquedaChange}
+              onKeyDown={handleKeyDownBusqueda}
               className="input"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
             />
-            <input
-              id="peso-input"
-              type="number"
-              placeholder="Peso"
-              value={peso}
-              onChange={(e) => setPeso(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="input"
-            />
+            {mostrarDropdown && (
+              <ul className="dropdown">
+                {articulosFiltrados.length > 0 ? (
+                  articulosFiltrados.map((articulo, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSeleccionarArticulo(articulo)}
+                      className={`dropdown-item ${cursor === index ? 'highlighted' : ''}`}
+                    >
+                      {articulo.nombre}
+                    </li>
+                  ))
+                ) : (
+                  <li className="dropdown-item">No hay artículos disponibles</li>
+                )}
+              </ul>
+            )}
           </div>
-          {seleccionado && (
-            <div className="preview-card">
-              <p>
-                <strong>Artículo:</strong> {seleccionado.nombre}
-              </p>
-              <p>
-                <strong>Peso:</strong>{' '}
-                {peso !== ''
-                  ? peso
-                    ? `${peso} ${unidadPeso}`
-                    : '-'
-                  : '1 kg'}
-              </p>
-              <p>
-                <strong>Total:</strong> ${total.toFixed(2)}
-              </p>
+
+          <div className="ventas-inputs-preview-container">
+            <div className="ventas-inputs">
+              <div>
+                <label htmlFor="precio-input">Precio:</label>
+                <input
+                  id="precio-input"
+                  type="number"
+                  placeholder="Precio"
+                  value={precio}
+                  onChange={(e) => setPrecio(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="ventas-input"
+                />
+              </div>
+              <div>
+                <label htmlFor="peso-input">Peso:</label>
+                <input
+                  id="peso-input"
+                  type="number"
+                  placeholder="Peso"
+                  value={peso}
+                  onChange={(e) => setPeso(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="ventas-input"
+                  ref={pesoInputRef}
+                />
+              </div>
             </div>
-          )}
-        </div>
+
+            <div className="ventas-vista-previa">
+              {seleccionado && (
+                <VistaPreviaArticulo
+                seleccionado={seleccionado}
+                precio={precio}
+                peso={peso}
+              />
+              
+              )}
+            </div>
+
+            <div className="ventas-finalizar-container">
+              {listaSeleccionados.length > 0 && (
+                <button onClick={handleClickFinalizarVenta} className="finalizar-button">
+                  Finalizar Venta
+                </button>
+              )}
+            </div>
+          </div>
+
+          <ListaArticulosSeleccionados
+            listaSeleccionados={listaSeleccionados}
+            setListaSeleccionados={setListaSeleccionados}
+          />
+        </>
       )}
 
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Artículo</th>
-              <th>Precio</th>
-              <th>Peso</th>
-              <th>Total</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {listaSeleccionados.map((articulo, index) => (
-              <tr key={index}>
-                <td>{articulo.nombre}</td>
-                <td>${articulo.precio.toFixed(2)}</td>
-                <td>
-                  {articulo.peso !== null
-                    ? `${articulo.peso} ${articulo.unidadPeso}`
-                    : '-'}
-                </td>
-                <td>${articulo.total.toFixed(2)}</td>
-                <td>
-                  <button
-                    onClick={() => handleEditar(index)}
-                    className="edit-button"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleEliminar(index)}
-                    className="delete-button"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
+      {mostrandoSeleccionPago && (
+        <div className="seleccion-pago-container">
+          <h3>Selecciona la forma de pago</h3>
+          <div className="formas-pago-botones">
+            {formasPago.map((fp, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setFormaPagoSeleccionada(fp);
+                  handleFinalizarVenta();
+                }}
+                className="boton-forma-pago"
+              >
+                {fp}
+              </button>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Botón para finalizar la venta */}
-      {listaSeleccionados.length > 0 && (
-        <button
-          onClick={() => setVentaFinalizada(true)}
-          className="finalizar-button"
-        >
-          Finalizar Venta
-        </button>
+          </div>
+          <button onClick={() => setMostrandoSeleccionPago(false)} className="volver-button">
+            Volver a la Venta
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
 export default Ventas;
-

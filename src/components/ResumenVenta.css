@@ -1,0 +1,38 @@
+.resumen-venta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .resumen-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+  }
+  
+  .resumen-label {
+    font-size: 14px;
+    color: #6c757d;
+  }
+  
+  .resumen-value {
+    font-size: 25px;
+    font-weight: bold;
+    color: #343a40;
+  }
+  
+  .resumen-select {
+    padding: 5px 10px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #343a40;
+  }
+  

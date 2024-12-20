@@ -1,42 +1,10 @@
-/* Ventas.css */
+/* src/components/Ventas.css */
 
 /* Contenedor principal */
 .ventas {
   padding: 10px;
   overflow-y: auto;
-}
-
-/* Título de la sección */
-.header-title {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-/* Contenedor del total acumulado */
-.total-container {
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.total-container h4 {
-  margin: 5px 0;
-  font-size: 1.2em;
-}
-
-/* Contenedor de la entrada de búsqueda */
-.input-container {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 0;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  position: relative; /* Por si necesitas posicionar dropdowns dentro */
 }
 
 /* Dropdown de artículos */
@@ -51,47 +19,62 @@
   border-radius: 4px;
 }
 
-/* Estilo para cada ítem del dropdown */
 .dropdown-item {
   padding: 10px;
   cursor: pointer;
 }
 
-.dropdown-item:hover {
-  background-color: #f1f1f1;
+.dropdown-item:hover,
+.dropdown-item.highlighted {
+  background-color: #f0f0f0;
+  color: #000;
 }
 
-/* Sección de inputs y vista previa */
-.input-section {
+/* Inputs y vista previa */
+.ventas-inputs-preview-container {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  align-items: flex-start; /* Alinea el tope verticalmente */
+  gap: 20px; /* Espacio entre columnas */
+  margin-top: 20px;
 }
 
-.inputs {
+/* Contiene precio y peso */
+.ventas-inputs {
   display: flex;
-  flex-direction: column;
-  flex: 2;
+  flex-direction: column; 
+  gap: 10px;
 }
 
-.inputs .input {
-  margin-bottom: 10px;
+/* Cada input (precio/peso) */
+.ventas-input {
+  padding: 8px;
+  font-size: 16px;
+  width: 150px; 
+  text-align: right;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.preview-card {
-  background-color: #fff8e1; /* Fondo amarillo claro */
-  padding: 15px;
+/* Vista previa del artículo */
+.ventas-vista-previa {
+  flex-shrink: 0; 
+  background-color: #fff3cd;
+  border: 1px solid #ffecb5;
   border-radius: 5px;
-  border: 1px solid #ffe082;
-  margin-left: 20px;
-  flex: 1;
+  padding: 15px;
+  width: 250px; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.preview-card p {
-  margin: 5px 0;
+/* Contenedor para el botón "Finalizar Venta" */
+.ventas-finalizar-container {
+  display: flex;
+  align-items: center; 
+  justify-content: flex-end;
+  flex: 1; /* Para que tome el espacio sobrante y empuje el botón a la derecha */
 }
 
-/* Contenedor de la tabla */
+/* Tabla de artículos seleccionados */
 .table-container {
   margin-top: 10px;
   overflow-x: auto;
@@ -99,7 +82,7 @@
 
 table {
   width: 100%;
-  min-width: 600px; /* Asegura que la tabla tenga un ancho mínimo */
+  min-width: 600px; 
   border-collapse: collapse;
 }
 
@@ -114,12 +97,10 @@ th {
   background-color: #f2f2f2;
 }
 
-/* Botones de acción */
+/* Botones de edición/eliminación */
 .edit-button,
 .delete-button {
   padding: 6px 12px;
-  margin-right: 5px;
-  margin-bottom: 5px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -145,13 +126,13 @@ th {
 
 /* Botón para finalizar la venta */
 .finalizar-button {
-  margin-top: 20px;
   padding: 10px 20px;
   background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .finalizar-button:hover {
@@ -180,6 +161,7 @@ th {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .volver-button:hover {
@@ -187,39 +169,66 @@ th {
 }
 
 /* Estilos para la selección de forma de pago */
-.seleccion-forma-pago {
-  text-align: center;
+.seleccion-pago-container {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   padding: 20px;
+  margin-top: 20px;
+  text-align: center;
 }
 
-.seleccion-forma-pago h2,
-.seleccion-forma-pago h3 {
+.seleccion-pago-container h3 {
   margin-bottom: 20px;
 }
 
-.seleccion-forma-pago p {
-  font-size: 1.2em;
+.formas-pago-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.seleccion-forma-pago ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.seleccion-forma-pago li {
-  margin: 10px 0;
-}
-
-.seleccion-forma-pago button {
+.boton-forma-pago {
   padding: 10px 20px;
-  font-size: 16px;
   background-color: #4caf50;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 14px;
 }
 
-.seleccion-forma-pago button:hover {
+.boton-forma-pago:hover {
   background-color: #45a049;
+}
+
+/* Estilos para VoiceInput */
+.voice-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Botón del micrófono */
+.mic-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.mic-button.listening {
+  color: red;
+}
+
+/* Texto de transcripción */
+.transcription-text {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
 }
