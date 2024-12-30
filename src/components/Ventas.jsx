@@ -10,6 +10,9 @@ import ResumenVenta from './ResumenVenta';
 import VistaPreviaArticulo from './VistaPreviaArticulo';
 import ListaArticulosSeleccionados from './ListaArticulosSeleccionados';
 import VoiceInput from './VoiceInput';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Ventas() {
   const { articulos } = useContext(ArticulosContext);
@@ -48,7 +51,6 @@ function Ventas() {
     localStorage.setItem('ultimoVendedor', vendedorSeleccionado);
   }, [vendedorSeleccionado]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -59,7 +61,6 @@ function Ventas() {
       console.log('Iniciando temporizador de 5s por haber ingresado por voz en pasoActual=1');
       timerRef.current = setTimeout(() => {
         console.log('Pasaron 5 segundos sin acción tras ingreso por voz');
-        // No chequeamos seleccionado y precio por ahora para simplificar
         if (pasoActual === 1 && fromVoice) {
           console.log('Agregando artículo automáticamente sin peso por timeout');
           handleAgregarArticulo(true);
@@ -76,7 +77,7 @@ function Ventas() {
         timerRef.current = null;
       }
     };
-  }, [pasoActual, fromVoice]); 
+  }, [pasoActual, fromVoice]);
 
   const handleBusquedaChange = (e) => {
     setBusqueda(e.target.value);
@@ -112,7 +113,7 @@ function Ventas() {
       setCursor(0);
       setPasoActual(1);
       setMensajeError('');
-      setFromVoice(false); // Selección manual
+      setFromVoice(false);
       console.log('Seleccionado artículo:', articulo.nombre);
 
       setTimeout(() => {
@@ -158,7 +159,6 @@ function Ventas() {
       e.preventDefault();
       console.log('Enter presionado en pasoActual:', pasoActual);
 
-      // El usuario interactuó manualmente => cancelar modo voz
       setFromVoice(false);
 
       if (pasoActual === 1) {
@@ -204,8 +204,9 @@ function Ventas() {
     }
 
     const pesoNumerico = parseFloat(peso);
-    let unidadPeso = null;
-    let pesoEnKg = null;
+    let unidadPeso = 'kg';
+    let pesoEnKg = 1; // Valor por defecto si no se ingresa peso
+    const precioFloat = parseFloat(precio);
 
     if (pesoNumerico && pesoNumerico > 0) {
       if (pesoNumerico >= 50) {
@@ -219,10 +220,10 @@ function Ventas() {
 
     const articulo = {
       ...seleccionado,
-      precio: parseFloat(precio),
-      peso: pesoOpcional && !peso ? '-' : (pesoNumerico ? pesoNumerico : '-'),
-      unidadPeso: pesoOpcional && !peso ? '-' : (unidadPeso ? unidadPeso : '-'),
-      total: pesoEnKg ? parseFloat(precio) * pesoEnKg : parseFloat(precio),
+      precio: precioFloat,
+      peso: (pesoNumerico && pesoNumerico > 0) ? pesoNumerico : 1, // Si no hay peso válido, usar 1
+      unidadPeso: unidadPeso,
+      total: precioFloat * pesoEnKg
     };
 
     setListaSeleccionados((prev) => [...prev, articulo]);
@@ -280,7 +281,15 @@ function Ventas() {
 
   const cantidadArticulos = listaSeleccionados.length;
 
-  const handleFinalizarVenta = () => {
+  // Lógica para finalizar venta cuando se actualice formaPagoSeleccionada
+  useEffect(() => {
+    if (formaPagoSeleccionada) {
+      handleFinalizarVenta();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formaPagoSeleccionada]);
+
+  const handleFinalizarVenta = async () => {
     if (!formaPagoSeleccionada) {
       alert('Por favor, selecciona una forma de pago.');
       console.log('Forma de pago no seleccionada');
@@ -288,18 +297,34 @@ function Ventas() {
     }
 
     const nuevoTicket = {
-      id: Date.now(),
-      articulos: listaSeleccionados,
-      total: totalAcumulado,
-      formaPago: formaPagoSeleccionada,
       vendedor: vendedorSeleccionado,
+      formaPago: formaPagoSeleccionada,
+      articulos: listaSeleccionados.map((articulo) => ({
+        nombre: articulo.nombre,
+        precioUnitario: articulo.precio,
+        peso: articulo.peso,
+        total: articulo.total,
+      })),
+      totalVenta: totalAcumulado,
       fecha: new Date(),
     };
-    setTickets((prev) => [...prev, nuevoTicket]);
-    setListaSeleccionados([]);
-    setFormaPagoSeleccionada('');
-    setPasoActual(0);
-    console.log('Venta finalizada:', nuevoTicket);
+
+    try {
+      const response = await axios.post('http://localhost:4000/ventas', nuevoTicket);
+      console.log('Venta creada en el backend:', response.data);
+
+      setTickets((prev) => [...prev, response.data.venta]);
+      setListaSeleccionados([]);
+      setPasoActual(0);
+      setMostrandoSeleccionPago(false);
+      setMensajeError('');
+      toast.success('Venta creada correctamente');
+      console.log('Venta finalizada y actualizada en el frontend');
+      setFormaPagoSeleccionada('');
+    } catch (error) {
+      console.error('Error al crear la venta en el backend:', error.response ? error.response.data : error.message);
+      toast.error('Hubo un error al crear la venta. Por favor, intenta nuevamente.');
+    }
   };
 
   const handleClickFinalizarVenta = () => {
@@ -403,11 +428,10 @@ function Ventas() {
             <div className="ventas-vista-previa">
               {seleccionado && (
                 <VistaPreviaArticulo
-                seleccionado={seleccionado}
-                precio={precio}
-                peso={peso}
-              />
-              
+                  seleccionado={seleccionado}
+                  precio={precio}
+                  peso={peso}
+                />
               )}
             </div>
 
@@ -431,16 +455,15 @@ function Ventas() {
         <div className="seleccion-pago-container">
           <h3>Selecciona la forma de pago</h3>
           <div className="formas-pago-botones">
-            {formasPago.map((fp, index) => (
+            {formasPago.map((fp) => (
               <button
-                key={index}
+                key={fp.id}
                 onClick={() => {
-                  setFormaPagoSeleccionada(fp);
-                  handleFinalizarVenta();
+                  setFormaPagoSeleccionada(fp.nombre);
                 }}
                 className="boton-forma-pago"
               >
-                {fp}
+                {fp.nombre}
               </button>
             ))}
           </div>
