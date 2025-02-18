@@ -3,16 +3,19 @@
 /* Contenedor principal */
 .ventas {
   padding: 10px;
-  overflow-y: auto;
-  position: relative; /* Por si necesitas posicionar dropdowns dentro */
+  overflow-x: hidden; /* Evita scroll horizontal */
+  position: relative;
+  max-width: 1500px; /* Se mantiene, ya que solo ajustaremos el área del input */
+  margin: 0 auto;
 }
 
 /* Dropdown de artículos */
 .dropdown {
   position: absolute;
-  background: #fff;
+  background: #ffffff;
   border: 1px solid #ccc;
   width: 100%;
+  max-width: 380px; /* Limita el ancho del dropdown */
   max-height: 150px;
   overflow-y: auto;
   z-index: 1000;
@@ -30,40 +33,47 @@
   color: #000;
 }
 
+/* Contenedor exclusivo para el input del artículo */
+.articulo-container {
+  max-width: 400px; /* Ajusta este valor según lo que necesites */
+  margin: 0; /* Alineado a la izquierda */
+}
+
 /* Inputs y vista previa */
 .ventas-inputs-preview-container {
   display: flex;
-  align-items: flex-start; /* Alinea el tope verticalmente */
-  gap: 20px; /* Espacio entre columnas */
-  margin-top: 20px;
+  align-items: flex-start; /* Alinea al tope verticalmente */
+  gap: 5px; /* Espacio reducido entre bloques */
+  margin-top: 10px;
 }
 
 /* Contiene precio y peso */
 .ventas-inputs {
   display: flex;
   flex-direction: column; 
-  gap: 10px;
+  gap: 5px;
 }
 
-/* Cada input (precio/peso) */
+/* Cada input (precio/peso) - aumentado */
 .ventas-input {
-  padding: 8px;
-  font-size: 16px;
-  width: 150px; 
+  padding: 10px;          /* Aumenté el padding */
+  font-size: 18px;        /* Aumenté el tamaño de fuente */
+  width: 200px;           /* Mayor ancho */
   text-align: right;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-/* Vista previa del artículo */
+/* Vista previa del artículo (caja amarilla) más grande */
 .ventas-vista-previa {
   flex-shrink: 0; 
   background-color: #fff3cd;
   border: 1px solid #ffecb5;
   border-radius: 5px;
-  padding: 15px;
-  width: 250px; 
+  padding: 20px;          /* Aumenté el padding */
+  width: 350px;           /* Mayor ancho */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 18px;        /* Aumenté el tamaño de fuente */
 }
 
 /* Contenedor para el botón "Finalizar Venta" */
@@ -71,7 +81,7 @@
   display: flex;
   align-items: center; 
   justify-content: flex-end;
-  flex: 1; /* Para que tome el espacio sobrante y empuje el botón a la derecha */
+  flex: 1; /* Toma el espacio sobrante y empuja el botón a la derecha */
 }
 
 /* Tabla de artículos seleccionados */
@@ -82,7 +92,7 @@
 
 table {
   width: 100%;
-  min-width: 600px; 
+  min-width: 400px;
   border-collapse: collapse;
 }
 
@@ -212,6 +222,13 @@ th {
   margin-bottom: 20px;
 }
 
+/* Centrar el botón del micrófono */
+.mic-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 /* Botón del micrófono */
 .mic-button {
   background-color: transparent;
@@ -231,4 +248,67 @@ th {
   font-size: 14px;
   color: #555;
   margin: 0;
+}
+
+/* ==================== */
+/* RESPONSIVE - MÓVIL   */
+/* ==================== */
+@media (max-width: 480px) {
+  .ventas {
+    padding: 5px;
+    max-width: 100%;
+  }
+  
+  .ventas-inputs-preview-container {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .ventas-inputs {
+    gap: 5px;
+  }
+  
+  .ventas-input {
+    width: 80px;
+    font-size: 14px;
+    padding: 4px;
+  }
+  
+  .ventas-vista-previa {
+    width: 130px;
+    padding: 8px;
+    font-size: 13px;
+  }
+  
+  .table-container table {
+    min-width: 300px;
+  }
+  
+  .finalizar-button,
+  .volver-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .mic-button {
+    font-size: 20px;
+  }
+  
+  .navbar {
+    display: none;
+  }
+  .navbar-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+  }
+  .navbar-mobile .menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+  }
 }

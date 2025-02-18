@@ -1,20 +1,23 @@
 .menu {
   background-color: #333;
-  overflow: hidden; /* Puedes dejarlo si quieres, no debería impedir el fixed */
-  position: relative; /* Creamos un contexto de apilamiento */
-  z-index: 9999; /* Aseguramos que el menú quede por encima del contenido */
+  overflow: hidden;
+  position: relative;
+  z-index: 9999;
 }
 
 .menu-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
+  padding: 2px 10px;  /* Menos padding vertical */
+  height: 30px;       /* Altura fija de 30px (ajusta según necesites) */
 }
 
 .menu-logo h1 {
   color: #fff;
   margin: 0;
+  font-size: 16px;    /* Reducir el tamaño de fuente para que se ajuste a la altura */
+  line-height: 30px;  /* Alinear verticalmente */
 }
 
 .menu-icon {
@@ -32,13 +35,13 @@
 }
 
 .menu-links li {
-  margin-left: 20px;
+  margin-left: 10px;  /* Reduce el margen entre enlaces */
 }
 
 .menu-links li a {
   color: #fff;
   text-decoration: none;
-  padding: 8px;
+  padding: 2px 4px;   /* Menos padding para que el enlace ocupe menos altura */
 }
 
 .menu-links li a:hover {
@@ -53,15 +56,15 @@
   }
 
   .menu-links {
-    position: fixed; /* Cambiamos a fixed para que siempre quede arriba */
-    top: 60px; /* Debajo del header */
+    position: fixed;
+    top: 30px; /* Ahora se ubica justo debajo de la barra (30px) */
     left: 0;
     right: 0;
     background-color: #333;
     flex-direction: column;
     align-items: center;
     display: none;
-    z-index: 99999; /* Un z-index muy alto para sobreponerse a todo */
+    z-index: 99999;
   }
 
   .menu-links.open {

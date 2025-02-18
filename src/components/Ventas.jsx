@@ -6,6 +6,7 @@ import { ArticulosContext } from '../context/ArticulosContext';
 import { FormasPagoContext } from '../context/FormasPagoContext';
 import { TicketsContext } from '../context/TicketsContext';
 import { UsuariosContext } from '../context/UsuariosContext';
+import { SalesContext } from '../context/SalesContext';
 import ResumenVenta from './ResumenVenta';
 import VistaPreviaArticulo from './VistaPreviaArticulo';
 import ListaArticulosSeleccionados from './ListaArticulosSeleccionados';
@@ -18,11 +19,12 @@ function Ventas() {
   const { articulos } = useContext(ArticulosContext);
   const { formasPago } = useContext(FormasPagoContext); 
   const { setTickets } = useContext(TicketsContext);
-  const { usuarios, setUsuarios } = useContext(UsuariosContext);
+  const { usuarios } = useContext(UsuariosContext);
+  const { agregarArticulo, obtenerVentas, limpiarVentas } = useContext(SalesContext);
 
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
-  const [listaSeleccionados, setListaSeleccionados] = useState([]);
+  // Se elimina el estado local para listaSeleccionados
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [precio, setPrecio] = useState('');
   const [peso, setPeso] = useState('');
@@ -37,9 +39,11 @@ function Ventas() {
   const pesoInputRef = useRef(null);
 
   const [mostrandoSeleccionPago, setMostrandoSeleccionPago] = useState(false);
-
   const [fromVoice, setFromVoice] = useState(false);
   const timerRef = useRef(null);
+
+  // Obtener la lista de artículos para el vendedor actual desde SalesContext
+  const listaSeleccionados = obtenerVentas(vendedorSeleccionado);
 
   useEffect(() => {
     if (!usuarios || usuarios.length === 0) {
@@ -47,7 +51,6 @@ function Ventas() {
     }
   }, [usuarios]);
   
-
   useEffect(() => {
     localStorage.setItem('ultimoVendedor', vendedorSeleccionado);
   }, [vendedorSeleccionado]);
@@ -88,8 +91,7 @@ function Ventas() {
 
   const articulosFiltrados = articulos.filter((art) => {
     const nombreValido = art.nombre?.toLowerCase() || '';
-    const codigoValido = art.codigo?.toString() || ''; // Convierte a string por si es numérico
-    
+    const codigoValido = art.codigo?.toString() || '';
     return (
       nombreValido.includes(busqueda.toLowerCase()) ||
       codigoValido.startsWith(busqueda)
@@ -226,18 +228,48 @@ function Ventas() {
     const articulo = {
       ...seleccionado,
       precio: precioFloat,
-      peso: (pesoNumerico && pesoNumerico > 0) ? pesoNumerico : 1, // Si no hay peso válido, usar 1
+      peso: (pesoNumerico && pesoNumerico > 0) ? pesoNumerico : 1,
       unidadPeso: unidadPeso,
       total: precioFloat * pesoEnKg
     };
 
-    setListaSeleccionados((prev) => [...prev, articulo]);
+    // Agregar el artículo a la venta del vendedor actual usando SalesContext
+    agregarArticulo(vendedorSeleccionado, articulo);
+
+    // Limpiar campos locales
     setSeleccionado(null);
     setPrecio('');
     setPeso('');
     setMensajeError('');
     console.log('Artículo agregado:', articulo);
   };
+
+  // Dentro de tu componente Ventas.jsx, en el cuerpo de la función Ventas:
+useEffect(() => {
+  const handleKeyDownGlobal = (e) => {
+    if (e.code === 'F9') { // Siguiente vendedor
+      e.preventDefault();
+      const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
+      const nuevoIndex = (indexActual + 1) % usuarios.length;
+      setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
+    } else if (e.code === 'F8') { // Vendedor anterior
+      e.preventDefault();
+      const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
+      const nuevoIndex = (indexActual - 1 + usuarios.length) % usuarios.length;
+      setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDownGlobal);
+  return () => window.removeEventListener('keydown', handleKeyDownGlobal);
+}, [usuarios, vendedorSeleccionado]);
+useEffect(() => {
+  const busquedaInput = document.getElementById('busqueda-input');
+  if (busquedaInput) {
+    busquedaInput.focus();
+  }
+}, [vendedorSeleccionado]);
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -279,14 +311,14 @@ function Ventas() {
     }
   }, [mostrarDropdown]);
 
+  // Calcular total y cantidad usando la lista del SalesContext
   const totalAcumulado = listaSeleccionados.reduce(
     (total, articulo) => total + (articulo.total || 0),
     0
   );
-
   const cantidadArticulos = listaSeleccionados.length;
 
-  // Lógica para finalizar venta cuando se actualice formaPagoSeleccionada
+  // Finalizar venta cuando se actualice formaPagoSeleccionada
   useEffect(() => {
     if (formaPagoSeleccionada) {
       handleFinalizarVenta();
@@ -319,7 +351,8 @@ function Ventas() {
       console.log('Venta creada en el backend:', response.data);
 
       setTickets((prev) => [...prev, response.data.venta]);
-      setListaSeleccionados([]);
+      // Limpiar la venta del vendedor en el SalesContext
+      limpiarVentas(vendedorSeleccionado);
       setPasoActual(0);
       setMostrandoSeleccionPago(false);
       setMensajeError('');
@@ -340,12 +373,12 @@ function Ventas() {
   return (
     <div className="ventas">
       <ResumenVenta
-  cantidadArticulos={cantidadArticulos}
-  totalAcumulado={Number(totalAcumulado) || 0}
-  vendedores={usuarios}
-  vendedorSeleccionado={vendedorSeleccionado}
-  setVendedorSeleccionado={setVendedorSeleccionado}
-/>
+        cantidadArticulos={cantidadArticulos}
+        totalAcumulado={Number(totalAcumulado) || 0}
+        vendedores={usuarios}
+        vendedorSeleccionado={vendedorSeleccionado}
+        setVendedorSeleccionado={setVendedorSeleccionado}
+      />
 
       {mensajeError && (
         <div className="mensaje-error">
@@ -368,37 +401,39 @@ function Ventas() {
             setFromVoice={setFromVoice}
           />
 
-          <div className="input-container">
-            <input
-              id="busqueda-input"
-              type="text"
-              inputMode="text"
-              placeholder="Código o nombre del artículo"
-              value={busqueda}
-              onChange={handleBusquedaChange}
-              onKeyDown={handleKeyDownBusqueda}
-              className="input"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="none"
-            />
-            {mostrarDropdown && (
-              <ul className="dropdown">
-                {articulosFiltrados.length > 0 ? (
-                  articulosFiltrados.map((articulo, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleSeleccionarArticulo(articulo)}
-                      className={`dropdown-item ${cursor === index ? 'highlighted' : ''}`}
-                    >
-                      {articulo.nombre}
-                    </li>
-                  ))
-                ) : (
-                  <li className="dropdown-item">No hay artículos disponibles</li>
-                )}
-              </ul>
-            )}
+          <div className="articulo-container">
+            <div className="input-container">
+              <input
+                id="busqueda-input"
+                type="text"
+                inputMode="text"
+                placeholder="Código o nombre del artículo"
+                value={busqueda}
+                onChange={handleBusquedaChange}
+                onKeyDown={handleKeyDownBusqueda}
+                className="input"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+              />
+              {mostrarDropdown && (
+                <ul className="dropdown">
+                  {articulosFiltrados.length > 0 ? (
+                    articulosFiltrados.map((articulo, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSeleccionarArticulo(articulo)}
+                        className={`dropdown-item ${cursor === index ? 'highlighted' : ''}`}
+                      >
+                        {articulo.nombre}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="dropdown-item">No hay artículos disponibles</li>
+                  )}
+                </ul>
+              )}
+            </div>
           </div>
 
           <div className="ventas-inputs-preview-container">
@@ -451,7 +486,6 @@ function Ventas() {
 
           <ListaArticulosSeleccionados
             listaSeleccionados={listaSeleccionados}
-            setListaSeleccionados={setListaSeleccionados}
           />
         </>
       )}

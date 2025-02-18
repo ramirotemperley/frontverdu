@@ -107,17 +107,20 @@ const VoiceInput = ({
 
   return (
     <div className="voice-input-container">
-      <button
-        onClick={startRecognition}
-        disabled={isListening}
-        className={`mic-button ${isListening ? 'listening' : ''}`}
-        aria-label="Activar reconocimiento de voz"
-      >
-        <FontAwesomeIcon icon={isListening ? faMicrophoneSlash : faMicrophone} />
-      </button>
+      <div className="mic-container">
+        <button
+          onClick={startRecognition}
+          disabled={isListening}
+          className={`mic-button ${isListening ? 'listening' : ''}`}
+          aria-label="Activar reconocimiento de voz"
+        >
+          <FontAwesomeIcon icon={isListening ? faMicrophoneSlash : faMicrophone} />
+        </button>
+      </div>
       <p className="transcription-text">{transcription}</p>
     </div>
   );
 };
 
 export default VoiceInput;
+
