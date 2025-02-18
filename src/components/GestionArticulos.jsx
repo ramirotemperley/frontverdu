@@ -3,22 +3,20 @@ import { ArticulosContext } from '../context/ArticulosContext';
 import './GestionArticulos.css';
 
 function GestionArticulos() {
-  const { articulos, setArticulos } = useContext(ArticulosContext);
+  const { articulos, setArticulos, agregarArticulo, eliminarArticulo } = useContext(ArticulosContext);
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [modoEdicion, setModoEdicion] = useState(false);
   const [articuloEditado, setArticuloEditado] = useState(null);
 
-  const agregarArticulo = () => {
-    if (nombre && codigo) {
-      setArticulos([...articulos, { codigo, nombre }]);
+  const handleAgregar = () => {
+    if (codigo.trim() && nombre.trim()) {
+      agregarArticulo({ codigo, nombre });
       setCodigo('');
       setNombre('');
+    } else {
+      alert('Por favor, completá todos los campos.');
     }
-  };
-
-  const eliminarArticulo = (codigo) => {
-    setArticulos(articulos.filter((art) => art.codigo !== codigo));
   };
 
   const iniciarEdicion = (articulo) => {
@@ -28,13 +26,31 @@ function GestionArticulos() {
     setNombre(articulo.nombre);
   };
 
-  const guardarEdicion = () => {
-    setArticulos(
-      articulos.map((art) =>
-        art.codigo === articuloEditado.codigo ? { codigo, nombre } : art
-      )
-    );
-    cancelarEdicion();
+  const guardarEdicion = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/articulos/${articuloEditado._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ codigo, nombre }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el artículo');
+      }
+
+      const articuloActualizado = await response.json();
+
+      // Actualizar el estado con los cambios realizados
+      setArticulos((prev) =>
+        prev.map((art) => (art._id === articuloActualizado.articulo._id ? articuloActualizado.articulo : art))
+      );
+
+      cancelarEdicion();
+    } catch (error) {
+      console.error('Error al guardar la edición:', error);
+    }
   };
 
   const cancelarEdicion = () => {
@@ -66,7 +82,7 @@ function GestionArticulos() {
             <button onClick={cancelarEdicion}>Cancelar</button>
           </>
         ) : (
-          <button onClick={agregarArticulo}>Agregar</button>
+          <button onClick={handleAgregar}>Agregar</button>
         )}
       </div>
       <table>
@@ -79,14 +95,12 @@ function GestionArticulos() {
         </thead>
         <tbody>
           {articulos.map((art) => (
-            <tr key={art.codigo}>
+            <tr key={art._id}>
               <td>{art.codigo}</td>
               <td>{art.nombre}</td>
               <td>
                 <button onClick={() => iniciarEdicion(art)}>Editar</button>
-                <button onClick={() => eliminarArticulo(art.codigo)}>
-                  Eliminar
-                </button>
+                <button onClick={() => eliminarArticulo(art._id)}>Eliminar</button>
               </td>
             </tr>
           ))}

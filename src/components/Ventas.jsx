@@ -43,9 +43,10 @@ function Ventas() {
 
   useEffect(() => {
     if (!usuarios || usuarios.length === 0) {
-      setUsuarios(['Vendedor 1', 'Vendedor 2', 'Vendedor 3']);
+      console.warn('No hay vendedores disponibles. Verificá el backend.');
     }
-  }, [usuarios, setUsuarios]);
+  }, [usuarios]);
+  
 
   useEffect(() => {
     localStorage.setItem('ultimoVendedor', vendedorSeleccionado);
@@ -85,11 +86,15 @@ function Ventas() {
     console.log('Cambio en búsqueda:', e.target.value);
   };
 
-  const articulosFiltrados = articulos.filter(
-    (art) =>
-      art.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      art.codigo.startsWith(busqueda)
-  );
+  const articulosFiltrados = articulos.filter((art) => {
+    const nombreValido = art.nombre?.toLowerCase() || '';
+    const codigoValido = art.codigo?.toString() || ''; // Convierte a string por si es numérico
+    
+    return (
+      nombreValido.includes(busqueda.toLowerCase()) ||
+      codigoValido.startsWith(busqueda)
+    );
+  });
 
   console.log('Artículos filtrados:', articulosFiltrados);
 
@@ -335,12 +340,12 @@ function Ventas() {
   return (
     <div className="ventas">
       <ResumenVenta
-        cantidadArticulos={cantidadArticulos}
-        totalAcumulado={Number(totalAcumulado) || 0}
-        vendedores={usuarios}
-        vendedorSeleccionado={vendedorSeleccionado}
-        setVendedorSeleccionado={setVendedorSeleccionado}
-      />
+  cantidadArticulos={cantidadArticulos}
+  totalAcumulado={Number(totalAcumulado) || 0}
+  vendedores={usuarios}
+  vendedorSeleccionado={vendedorSeleccionado}
+  setVendedorSeleccionado={setVendedorSeleccionado}
+/>
 
       {mensajeError && (
         <div className="mensaje-error">

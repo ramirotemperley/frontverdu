@@ -1,32 +1,4 @@
-// src/context/FormasPagoContext.js
-
-import React, { createContext, useState } from 'react';
-
-export const FormasPagoContext = createContext();
-
-export const FormasPagoProvider = ({ children }) => {
-  // Inicializamos con una forma de pago predeterminada: "Efectivo"
-  // Puedes agregar más si lo deseas.
-  const [formasPago] = useState([
-    {
-      id: 1,
-      codigo: 'EFE', // Opcional
-      nombre: 'Efectivo',
-    },
-  ]);
-
-  // Sin backend, no intentamos agregar, editar o eliminar.
-  // Estas funciones podrían estar vacías o no definirse.
-  
-  return (
-    <FormasPagoContext.Provider value={{ formasPago }}>
-      {children}
-    </FormasPagoContext.Provider>
-  );
-};
-
-
-/*import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 
 export const FormasPagoContext = createContext();
 
@@ -39,7 +11,6 @@ export const FormasPagoProvider = ({ children }) => {
       try {
         const response = await fetch('http://localhost:4000/formas-pago');
         const data = await response.json();
-        // data debería ser un array de objetos { id, codigo, nombre }
         setFormasPago(data);
       } catch (error) {
         console.error('Error al obtener las formas de pago:', error);
@@ -49,7 +20,7 @@ export const FormasPagoProvider = ({ children }) => {
     fetchFormasPago();
   }, []);
 
-  // Función para agregar una forma de pago con codigo y nombre
+  // Función para agregar una forma de pago
   const addFormaPago = async (codigo, nombre) => {
     try {
       const response = await fetch('http://localhost:4000/formas-pago', {
@@ -61,14 +32,13 @@ export const FormasPagoProvider = ({ children }) => {
       });
 
       const nuevaFormaPago = await response.json();
-      // Se espera que nuevaFormaPago sea algo como: { id: ..., codigo: ..., nombre: ... }
-      setFormasPago((prevFormasPago) => [...prevFormasPago, nuevaFormaPago]);
+      setFormasPago((prevFormasPago) => [...prevFormasPago, nuevaFormaPago.formaPago]);
     } catch (error) {
       console.error('Error al agregar una forma de pago:', error);
     }
   };
 
-  // Función para eliminar una forma de pago por id
+  // Función para eliminar una forma de pago
   const deleteFormaPago = async (id) => {
     try {
       await fetch(`http://localhost:4000/formas-pago/${id}`, {
@@ -76,7 +46,7 @@ export const FormasPagoProvider = ({ children }) => {
       });
 
       setFormasPago((prevFormasPago) =>
-        prevFormasPago.filter((formaPago) => formaPago.id !== id)
+        prevFormasPago.filter((formaPago) => formaPago._id !== id)
       );
     } catch (error) {
       console.error('Error al eliminar una forma de pago:', error);
@@ -90,4 +60,4 @@ export const FormasPagoProvider = ({ children }) => {
       {children}
     </FormasPagoContext.Provider>
   );
-};*/
+};

@@ -3,7 +3,7 @@ import { FormasPagoContext } from '../context/FormasPagoContext';
 import './GestionFormasPago.css';
 
 function GestionFormasPago() {
-  const { formasPago, addFormaPago, deleteFormaPago } = useContext(FormasPagoContext);
+  const { formasPago, setFormasPago, addFormaPago, deleteFormaPago } = useContext(FormasPagoContext);
   const [codigo, setCodigo] = useState('');
   const [nombre, setNombre] = useState('');
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -12,12 +12,16 @@ function GestionFormasPago() {
   const handleAgregar = (e) => {
     e.preventDefault();
     if (!codigo.trim() || !nombre.trim()) {
-      alert('Debes ingresar código y nombre');
+      alert('Debes ingresar código y nombre.');
       return;
     }
-    addFormaPago(codigo.trim(), nombre.trim());
-    setCodigo('');
-    setNombre('');
+    if (modoEdicion) {
+      handleGuardarEdicion();
+    } else {
+      addFormaPago(codigo.trim(), nombre.trim());
+      setCodigo('');
+      setNombre('');
+    }
   };
 
   const handleEliminar = (id) => {
@@ -26,8 +30,48 @@ function GestionFormasPago() {
     }
   };
 
-  // Ajusta la lógica de edición si es necesario para manejar ambos campos
-  // ...
+  const iniciarEdicion = (formaPago) => {
+    setModoEdicion(true);
+    setFormaPagoEditada(formaPago);
+    setCodigo(formaPago.codigo);
+    setNombre(formaPago.nombre);
+  };
+
+  const handleGuardarEdicion = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/formas-pago/${formaPagoEditada._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ codigo, nombre }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar la forma de pago');
+      }
+
+      const formaPagoActualizada = await response.json();
+
+      // Actualizar el estado local con la forma de pago editada
+      setFormasPago((prevFormasPago) =>
+        prevFormasPago.map((fp) =>
+          fp._id === formaPagoActualizada.formaPago._id ? formaPagoActualizada.formaPago : fp
+        )
+      );
+
+      cancelarEdicion();
+    } catch (error) {
+      console.error('Error al guardar la edición:', error);
+    }
+  };
+
+  const cancelarEdicion = () => {
+    setModoEdicion(false);
+    setFormaPagoEditada(null);
+    setCodigo('');
+    setNombre('');
+  };
 
   return (
     <div className="gestion-formas-pago">
@@ -45,26 +89,19 @@ function GestionFormasPago() {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
         />
-        {!modoEdicion ? (
-          <button type="submit">Agregar</button>
-        ) : (
-          <>
-            <button type="submit">Guardar</button>
-            <button type="button" onClick={() => {
-              setModoEdicion(false);
-              setFormaPagoEditada(null);
-              setCodigo('');
-              setNombre('');
-            }}>Cancelar</button>
-          </>
+        <button type="submit">{modoEdicion ? 'Guardar' : 'Agregar'}</button>
+        {modoEdicion && (
+          <button type="button" onClick={cancelarEdicion}>
+            Cancelar
+          </button>
         )}
       </form>
       <ul>
         {formasPago.map((fp) => (
-          <li key={fp.id}>
+          <li key={fp._id}>
             {fp.codigo} - {fp.nombre}
-            {/* Aquí puedes agregar botones para editar y eliminar */}
-            <button onClick={() => handleEliminar(fp.id)}>Eliminar</button>
+            <button onClick={() => iniciarEdicion(fp)}>Editar</button>
+            <button onClick={() => handleEliminar(fp._id)}>Eliminar</button>
           </li>
         ))}
       </ul>

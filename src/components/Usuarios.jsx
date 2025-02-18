@@ -3,67 +3,50 @@ import { UsuariosContext } from '../context/UsuariosContext';
 import './Usuarios.css';
 
 function Usuarios() {
-  const { usuarios, setUsuarios } = useContext(UsuariosContext);
+  const { usuarios, addUsuario, deleteUsuario } = useContext(UsuariosContext);
   const [nuevoUsuario, setNuevoUsuario] = useState('');
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [usuarioEditado, setUsuarioEditado] = useState(null);
 
-  const agregarUsuario = () => {
-    if (nuevoUsuario.trim()) {
-      setUsuarios([...usuarios, nuevoUsuario.trim()]);
-      setNuevoUsuario('');
+  const handleAgregar = () => {
+    const nombre = nuevoUsuario.trim();
+    if (!nombre) {
+      alert('Por favor, ingresá un nombre.');
+      return;
     }
-  };
-
-  const eliminarUsuario = (usuario) => {
-    setUsuarios(usuarios.filter((u) => u !== usuario));
-  };
-
-  const iniciarEdicion = (usuario) => {
-    setModoEdicion(true);
-    setUsuarioEditado(usuario);
-    setNuevoUsuario(usuario);
-  };
-
-  const guardarEdicion = () => {
-    setUsuarios(
-      usuarios.map((u) => (u === usuarioEditado ? nuevoUsuario.trim() : u))
-    );
-    cancelarEdicion();
-  };
-
-  const cancelarEdicion = () => {
-    setModoEdicion(false);
-    setUsuarioEditado(null);
+    if (usuarios.some(u => u.nombre === nombre)) { // <- Validar duplicados
+      alert('¡Este nombre ya existe!');
+      return;
+    }
+    addUsuario({ nombre });
     setNuevoUsuario('');
+  };
+
+  const handleEliminar = (id) => {
+    if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
+      deleteUsuario(id);
+    }
   };
 
   return (
     <div className="gestion-usuarios">
-      <h2>Gestión de Usuarios</h2>
+      <h2>Gestión de Vendedores</h2>
       <div className="form-usuarios">
         <input
           type="text"
-          placeholder="Nombre del Usuario"
+          placeholder="Nombre del vendedor"
           value={nuevoUsuario}
           onChange={(e) => setNuevoUsuario(e.target.value)}
         />
-        {modoEdicion ? (
-          <>
-            <button onClick={guardarEdicion}>Guardar</button>
-            <button onClick={cancelarEdicion}>Cancelar</button>
-          </>
-        ) : (
-          <button onClick={agregarUsuario}>Agregar</button>
-        )}
+        <button onClick={handleAgregar}>Agregar</button>
       </div>
       <ul>
-        {usuarios.map((usuario, index) => (
-          <li key={index}>
-            {usuario}
-            <button onClick={() => iniciarEdicion(usuario)}>Editar</button>
-            <button onClick={() => eliminarUsuario(usuario)}>Eliminar</button>
-          </li>
+        {usuarios?.map((usuario) => (
+          // Validación doble: usuario existe y tiene _id + nombre
+          usuario?._id && usuario?.nombre && (
+            <li key={usuario._id}>
+              {usuario.nombre}
+              <button onClick={() => handleEliminar(usuario._id)}>Eliminar</button>
+            </li>
+          )
         ))}
       </ul>
     </div>

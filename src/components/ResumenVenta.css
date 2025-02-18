@@ -1,38 +1,55 @@
+/* =============================================== */
+/* Estilos para el Resumen de Venta (ResumenVenta) */
+/* =============================================== */
+
 .resumen-venta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8f9fa;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .resumen-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
-  }
-  
-  .resumen-label {
-    font-size: 14px;
-    color: #6c757d;
-  }
-  
-  .resumen-value {
-    font-size: 25px;
-    font-weight: bold;
-    color: #343a40;
-  }
-  
-  .resumen-select {
-    padding: 5px 10px;
-    font-size: 16px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background-color: #ffffff;
-    color: #343a40;
-  }
-  
+  background: #ffffff;
+  padding: 2px 8px;              /* Padding reducido para menor altura */
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 2px solid #4caf50;
+  flex-wrap: nowrap;             /* Siempre en una línea */
+  width: 100%;
+  max-width: 400px;              /* Ancho máximo angosto */
+  margin: 0 auto;                /* Sin márgenes verticales; centrado horizontalmente */
+  overflow-x: auto;
+}
+
+.resumen-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;                     /* Sin márgenes adicionales */
+}
+
+.resumen-label {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 0;              /* Sin separación extra debajo */
+  line-height: 1;
+}
+
+.resumen-valor {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  line-height: 1;
+}
+
+.resumen-select {
+  padding: 2px 5px;              /* Padding reducido para que el select no aumente la altura */
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+  line-height: 1;
+}
+
+.resumen-select:focus {
+  border-color: #4caf50;
+  outline: none;
+}

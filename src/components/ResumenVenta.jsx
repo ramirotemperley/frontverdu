@@ -1,4 +1,3 @@
-import React from 'react';
 import './ResumenVenta.css';
 
 const ResumenVenta = ({
@@ -12,11 +11,11 @@ const ResumenVenta = ({
     <div className="resumen-venta">
       <div className="resumen-item">
         <span className="resumen-label">Artículos:</span>
-        <span className="resumen-value">{cantidadArticulos}</span>
+        <span className="resumen-valor">{cantidadArticulos}</span>
       </div>
       <div className="resumen-item">
         <span className="resumen-label">Total:</span>
-        <span className="resumen-value">${totalAcumulado.toFixed(2)}</span>
+        <span className="resumen-valor">${totalAcumulado.toFixed(2)}</span>
       </div>
       <div className="resumen-item">
         <span className="resumen-label">Vendedor:</span>
@@ -25,9 +24,10 @@ const ResumenVenta = ({
           value={vendedorSeleccionado}
           onChange={(e) => setVendedorSeleccionado(e.target.value)}
         >
-          {vendedores.map((vendedor, index) => (
-            <option key={index} value={vendedor}>
-              {vendedor}
+          <option value="">Seleccionar vendedor</option>
+          {vendedores.map((vendedor) => (
+            <option key={vendedor._id} value={vendedor.nombre}>
+              {vendedor.nombre}
             </option>
           ))}
         </select>
@@ -37,5 +37,3 @@ const ResumenVenta = ({
 };
 
 export default ResumenVenta;
-
-
