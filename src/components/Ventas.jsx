@@ -24,20 +24,19 @@ function Ventas() {
 
   const [busqueda, setBusqueda] = useState('');
   const [seleccionado, setSeleccionado] = useState(null);
-  // Se elimina el estado local para listaSeleccionados
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [precio, setPrecio] = useState('');
   const [peso, setPeso] = useState('');
   const [pasoActual, setPasoActual] = useState(0);
   const [formaPagoSeleccionada, setFormaPagoSeleccionada] = useState('');
   const [mensajeError, setMensajeError] = useState('');
+  // Se almacena el nombre del vendedor; se usa para buscar su id en UsuariosContext
   const [vendedorSeleccionado, setVendedorSeleccionado] = useState(
     localStorage.getItem('ultimoVendedor') || 'Vendedor 1'
   );
   const [cursor, setCursor] = useState(0);
 
   const pesoInputRef = useRef(null);
-
   const [mostrandoSeleccionPago, setMostrandoSeleccionPago] = useState(false);
   const [fromVoice, setFromVoice] = useState(false);
   const timerRef = useRef(null);
@@ -60,9 +59,8 @@ function Ventas() {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-
     if (pasoActual === 1 && fromVoice) {
-      console.log('Iniciando temporizador de 5s por haber ingresado por voz en pasoActual=1');
+      console.log('Iniciando temporizador de 5s por ingreso por voz en pasoActual=1');
       timerRef.current = setTimeout(() => {
         console.log('Pasaron 5 segundos sin acción tras ingreso por voz');
         if (pasoActual === 1 && fromVoice) {
@@ -74,7 +72,6 @@ function Ventas() {
         }
       }, 5000);
     }
-
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -113,7 +110,6 @@ function Ventas() {
         console.log('Seleccionado artículo 999: seleccionando forma de pago');
         return;
       }
-
       setSeleccionado(articulo);
       setMostrarDropdown(false);
       setBusqueda('');
@@ -122,7 +118,6 @@ function Ventas() {
       setMensajeError('');
       setFromVoice(false);
       console.log('Seleccionado artículo:', articulo.nombre);
-
       setTimeout(() => {
         document.getElementById('precio-input')?.focus();
       }, 100);
@@ -165,9 +160,7 @@ function Ventas() {
     if (e.key === 'Enter') {
       e.preventDefault();
       console.log('Enter presionado en pasoActual:', pasoActual);
-
       setFromVoice(false);
-
       if (pasoActual === 1) {
         if (!precio || isNaN(precio) || parseFloat(precio) <= 0) {
           setMensajeError('Por favor, ingresa un precio válido.');
@@ -175,7 +168,6 @@ function Ventas() {
           console.log('Precio inválido');
           return;
         }
-
         document.getElementById('peso-input')?.focus();
         setPasoActual(2);
         console.log('Paso a peso');
@@ -187,14 +179,12 @@ function Ventas() {
           console.log('Peso opcional no ingresado: artículo agregado sin peso');
           return;
         }
-
         if (isNaN(peso) || parseFloat(peso) <= 0) {
           setMensajeError('Por favor, ingresa un peso válido.');
           document.getElementById('peso-input')?.focus();
           console.log('Peso inválido');
           return;
         }
-
         handleAgregarArticulo(false);
         document.getElementById('busqueda-input')?.focus();
         setPasoActual(0);
@@ -209,13 +199,20 @@ function Ventas() {
       console.log('Precio faltante al agregar artículo');
       return;
     }
-
-    const pesoNumerico = parseFloat(peso);
-    let unidadPeso = 'kg';
-    let pesoEnKg = 1; // Valor por defecto si no se ingresa peso
+  
     const precioFloat = parseFloat(precio);
-
-    if (pesoNumerico && pesoNumerico > 0) {
+    const pesoNumerico = parseFloat(peso);
+  
+    let unidadPeso;
+    let pesoEnKg;
+    let total;
+  
+    // Si el peso no se ingresa o no es válido, se usa el precio como total y se asigna null al peso.
+    if (!peso || isNaN(pesoNumerico) || pesoNumerico <= 0) {
+      pesoEnKg = null;
+      unidadPeso = null;
+      total = precioFloat;
+    } else {
       if (pesoNumerico >= 50) {
         unidadPeso = 'g';
         pesoEnKg = pesoNumerico / 1000;
@@ -223,19 +220,21 @@ function Ventas() {
         unidadPeso = 'kg';
         pesoEnKg = pesoNumerico;
       }
+      total = precioFloat * pesoEnKg;
     }
-
+  
     const articulo = {
       ...seleccionado,
       precio: precioFloat,
-      peso: (pesoNumerico && pesoNumerico > 0) ? pesoNumerico : 1,
+      // Si el peso no se ingresó, se asigna null
+      peso: pesoEnKg,
       unidadPeso: unidadPeso,
-      total: precioFloat * pesoEnKg
+      total: total,
     };
-
+  
     // Agregar el artículo a la venta del vendedor actual usando SalesContext
     agregarArticulo(vendedorSeleccionado, articulo);
-
+  
     // Limpiar campos locales
     setSeleccionado(null);
     setPrecio('');
@@ -243,33 +242,32 @@ function Ventas() {
     setMensajeError('');
     console.log('Artículo agregado:', articulo);
   };
+  
 
-  // Dentro de tu componente Ventas.jsx, en el cuerpo de la función Ventas:
-useEffect(() => {
-  const handleKeyDownGlobal = (e) => {
-    if (e.code === 'F9') { // Siguiente vendedor
-      e.preventDefault();
-      const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
-      const nuevoIndex = (indexActual + 1) % usuarios.length;
-      setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
-    } else if (e.code === 'F8') { // Vendedor anterior
-      e.preventDefault();
-      const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
-      const nuevoIndex = (indexActual - 1 + usuarios.length) % usuarios.length;
-      setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
+  useEffect(() => {
+    const handleKeyDownGlobal = (e) => {
+      if (e.code === 'F9') { // Siguiente vendedor
+        e.preventDefault();
+        const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
+        const nuevoIndex = (indexActual + 1) % usuarios.length;
+        setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
+      } else if (e.code === 'F8') { // Vendedor anterior
+        e.preventDefault();
+        const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
+        const nuevoIndex = (indexActual - 1 + usuarios.length) % usuarios.length;
+        setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDownGlobal);
+    return () => window.removeEventListener('keydown', handleKeyDownGlobal);
+  }, [usuarios, vendedorSeleccionado]);
+
+  useEffect(() => {
+    const busquedaInput = document.getElementById('busqueda-input');
+    if (busquedaInput) {
+      busquedaInput.focus();
     }
-  };
-
-  window.addEventListener('keydown', handleKeyDownGlobal);
-  return () => window.removeEventListener('keydown', handleKeyDownGlobal);
-}, [usuarios, vendedorSeleccionado]);
-useEffect(() => {
-  const busquedaInput = document.getElementById('busqueda-input');
-  if (busquedaInput) {
-    busquedaInput.focus();
-  }
-}, [vendedorSeleccionado]);
-
+  }, [vendedorSeleccionado]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -278,7 +276,6 @@ useEffect(() => {
         console.log('Clic fuera del dropdown: cerrando dropdown');
       }
     };
-
     window.addEventListener('mousedown', handleClickOutside);
     return () => {
       window.removeEventListener('mousedown', handleClickOutside);
@@ -326,45 +323,90 @@ useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formaPagoSeleccionada]);
 
-  const handleFinalizarVenta = async () => {
-    if (!formaPagoSeleccionada) {
-      alert('Por favor, selecciona una forma de pago.');
-      console.log('Forma de pago no seleccionada');
-      return;
-    }
+  
+  const DEFAULT_ARTICULO_ID = 1; // Asegurate de que este id corresponda al artículo "Verdulería" en la base de datos
 
-    const nuevoTicket = {
-      vendedor: vendedorSeleccionado,
-      formaPago: formaPagoSeleccionada,
-      articulos: listaSeleccionados.map((articulo) => ({
-        nombre: articulo.nombre,
-        precioUnitario: articulo.precio,
-        peso: articulo.peso,
-        total: articulo.total,
-      })),
-      totalVenta: totalAcumulado,
-      fecha: new Date(),
-    };
+const handleFinalizarVenta = async () => {
+  if (!formaPagoSeleccionada) {
+    alert('Por favor, selecciona una forma de pago.');
+    console.log('Forma de pago no seleccionada');
+    return;
+  }
+  // Buscar el vendedor actual en base al nombre almacenado
+  const vendedorActual = usuarios.find(
+    (u) => u.nombre.toLowerCase() === vendedorSeleccionado.toLowerCase()
+  );
+  if (!vendedorActual) {
+    console.error("Vendedor no encontrado para:", vendedorSeleccionado);
+    toast.error("Vendedor no encontrado. Por favor, selecciona un vendedor válido.");
+    return;
+  }
 
-    try {
-      const response = await axios.post('http://localhost:4000/ventas', nuevoTicket);
-      console.log('Venta creada en el backend:', response.data);
+  // Calcular totalAcumulado de forma segura:
+  const totalAcumulado = Array.isArray(listaSeleccionados)
+    ? listaSeleccionados.reduce((total, articulo) => total + (articulo.total || 0), 0)
+    : 0;
 
-      setTickets((prev) => [...prev, response.data.venta]);
-      // Limpiar la venta del vendedor en el SalesContext
-      limpiarVentas(vendedorSeleccionado);
-      setPasoActual(0);
-      setMostrandoSeleccionPago(false);
-      setMensajeError('');
-      toast.success('Venta creada correctamente');
-      console.log('Venta finalizada y actualizada en el frontend');
-      setFormaPagoSeleccionada('');
-    } catch (error) {
-      console.error('Error al crear la venta en el backend:', error.response ? error.response.data : error.message);
-      toast.error('Hubo un error al crear la venta. Por favor, intenta nuevamente.');
-    }
+  // Si no se seleccionó ningún artículo, usamos un artículo por defecto
+  const articulosArray = listaSeleccionados.length > 0
+    ? listaSeleccionados.map((articulo) => ({
+        // Usamos la verificación: si articulo.id es null o undefined, usamos DEFAULT_ARTICULO_ID
+        articuloId: (articulo.id != null) ? articulo.id : DEFAULT_ARTICULO_ID,
+        cantidad: 1,
+        precio: articulo.precio != null ? articulo.precio : 0,
+        total: articulo.total != null ? articulo.total : 0,
+      }))
+    : [{
+        articuloId: DEFAULT_ARTICULO_ID,
+        cantidad: 1,
+        precio: parseFloat(precio) || 0,
+        total: parseFloat(precio) || 0,
+      }];
+
+  const nuevoTicket = {
+    vendedorId: vendedorActual.id, // Valor numérico del vendedor
+    formaPagoId: typeof formaPagoSeleccionada === 'object'
+      ? formaPagoSeleccionada.id
+      : formaPagoSeleccionada, // Se asume que ya es el id numérico
+    articulos: articulosArray,
+    totalVenta: totalAcumulado,
+    fecha: new Date(),
   };
 
+  console.log("Nuevo ticket a enviar:", nuevoTicket);
+
+  try {
+    const response = await axios.post('http://localhost:4000/ventas', nuevoTicket);
+    console.log('Venta creada en el backend:', response.data);
+
+    const newVenta = {
+      id: response.data.ventaId,
+      totalVenta: nuevoTicket.totalVenta,
+      vendedorId: nuevoTicket.vendedorId,
+      vendedor: vendedorActual.nombre, // agregamos el nombre del vendedor
+      formaPagoId: nuevoTicket.formaPagoId,
+      fecha: nuevoTicket.fecha,
+      articulos: nuevoTicket.articulos,
+    };
+    
+
+    setTickets((prev) => [...prev, newVenta]);
+    limpiarVentas(vendedorSeleccionado);
+    setPasoActual(0);
+    setMostrandoSeleccionPago(false);
+    setMensajeError('');
+    toast.success('Venta creada correctamente');
+    console.log('Venta finalizada y actualizada en el frontend');
+    setFormaPagoSeleccionada('');
+  } catch (error) {
+    console.error('Error al crear la venta en el backend:', error.response ? error.response.data : error.message);
+    toast.error('Hubo un error al crear la venta. Por favor, intenta nuevamente.');
+  }
+};
+  
+
+  
+  
   const handleClickFinalizarVenta = () => {
     setMostrandoSeleccionPago(true);
     console.log('Seleccionando forma de pago');
@@ -498,7 +540,7 @@ useEffect(() => {
               <button
                 key={fp.id}
                 onClick={() => {
-                  setFormaPagoSeleccionada(fp.nombre);
+                  setFormaPagoSeleccionada(fp.id);
                 }}
                 className="boton-forma-pago"
               >

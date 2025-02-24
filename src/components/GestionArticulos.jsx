@@ -4,6 +4,7 @@ import './GestionArticulos.css';
 
 function GestionArticulos() {
   const { articulos, setArticulos, agregarArticulo, eliminarArticulo } = useContext(ArticulosContext);
+
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -11,6 +12,7 @@ function GestionArticulos() {
 
   const handleAgregar = () => {
     if (codigo.trim() && nombre.trim()) {
+      // Llama a la función del Context
       agregarArticulo({ codigo, nombre });
       setCodigo('');
       setNombre('');
@@ -19,6 +21,7 @@ function GestionArticulos() {
     }
   };
 
+  // Inicia la edición (carga los datos en los inputs)
   const iniciarEdicion = (articulo) => {
     setModoEdicion(true);
     setArticuloEditado(articulo);
@@ -26,9 +29,11 @@ function GestionArticulos() {
     setNombre(articulo.nombre);
   };
 
+  // Guarda los cambios (PUT)
   const guardarEdicion = async () => {
+    if (!articuloEditado) return;
     try {
-      const response = await fetch(`http://localhost:4000/articulos/${articuloEditado._id}`, {
+      const response = await fetch(`http://localhost:4000/articulos/${articuloEditado.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -40,11 +45,16 @@ function GestionArticulos() {
         throw new Error('Error al actualizar el artículo');
       }
 
+      // El backend debería responder con { articulo: { id, codigo, nombre } }
       const articuloActualizado = await response.json();
 
-      // Actualizar el estado con los cambios realizados
+      // Actualizamos el estado local
       setArticulos((prev) =>
-        prev.map((art) => (art._id === articuloActualizado.articulo._id ? articuloActualizado.articulo : art))
+        prev.map((art) =>
+          art.id === articuloActualizado.articulo.id
+            ? articuloActualizado.articulo
+            : art
+        )
       );
 
       cancelarEdicion();
@@ -53,6 +63,7 @@ function GestionArticulos() {
     }
   };
 
+  // Sale del modo edición
   const cancelarEdicion = () => {
     setModoEdicion(false);
     setArticuloEditado(null);
@@ -76,6 +87,7 @@ function GestionArticulos() {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
         />
+
         {modoEdicion ? (
           <>
             <button onClick={guardarEdicion}>Guardar</button>
@@ -85,6 +97,7 @@ function GestionArticulos() {
           <button onClick={handleAgregar}>Agregar</button>
         )}
       </div>
+
       <table>
         <thead>
           <tr>
@@ -95,12 +108,14 @@ function GestionArticulos() {
         </thead>
         <tbody>
           {articulos.map((art) => (
-            <tr key={art._id}>
+            // Usa 'art.id' en lugar de 'art._id'
+            <tr key={art.id}>
               <td>{art.codigo}</td>
               <td>{art.nombre}</td>
               <td>
                 <button onClick={() => iniciarEdicion(art)}>Editar</button>
-                <button onClick={() => eliminarArticulo(art._id)}>Eliminar</button>
+                {/* Usa 'art.id' para eliminar */}
+                <button onClick={() => eliminarArticulo(art.id)}>Eliminar</button>
               </td>
             </tr>
           ))}

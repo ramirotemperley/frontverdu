@@ -12,10 +12,12 @@ function Usuarios() {
       alert('Por favor, ingresá un nombre.');
       return;
     }
-    if (usuarios.some(u => u.nombre === nombre)) { // <- Validar duplicados
+
+    if (usuarios.some(u => u.nombre === nombre)) {
       alert('¡Este nombre ya existe!');
       return;
     }
+
     addUsuario({ nombre });
     setNuevoUsuario('');
   };
@@ -40,11 +42,10 @@ function Usuarios() {
       </div>
       <ul>
         {usuarios?.map((usuario) => (
-          // Validación doble: usuario existe y tiene _id + nombre
-          usuario?._id && usuario?.nombre && (
-            <li key={usuario._id}>
+          usuario?.id && usuario?.nombre && (
+            <li key={usuario.id}>
               {usuario.nombre}
-              <button onClick={() => handleEliminar(usuario._id)}>Eliminar</button>
+              <button onClick={() => handleEliminar(usuario.id)}>Eliminar</button>
             </li>
           )
         ))}

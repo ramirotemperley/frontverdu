@@ -39,7 +39,7 @@ function GestionFormasPago() {
 
   const handleGuardarEdicion = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/formas-pago/${formaPagoEditada._id}`, {
+      const response = await fetch(`http://localhost:4000/formas-pago/${formaPagoEditada.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ function GestionFormasPago() {
       // Actualizar el estado local con la forma de pago editada
       setFormasPago((prevFormasPago) =>
         prevFormasPago.map((fp) =>
-          fp._id === formaPagoActualizada.formaPago._id ? formaPagoActualizada.formaPago : fp
+          fp.id === formaPagoActualizada.formaPago.id ? formaPagoActualizada.formaPago : fp
         )
       );
 
@@ -98,10 +98,10 @@ function GestionFormasPago() {
       </form>
       <ul>
         {formasPago.map((fp) => (
-          <li key={fp._id}>
+          <li key={fp.id}>
             {fp.codigo} - {fp.nombre}
             <button onClick={() => iniciarEdicion(fp)}>Editar</button>
-            <button onClick={() => handleEliminar(fp._id)}>Eliminar</button>
+            <button onClick={() => handleEliminar(fp.id)}>Eliminar</button>
           </li>
         ))}
       </ul>

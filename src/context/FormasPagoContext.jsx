@@ -46,7 +46,7 @@ export const FormasPagoProvider = ({ children }) => {
       });
 
       setFormasPago((prevFormasPago) =>
-        prevFormasPago.filter((formaPago) => formaPago._id !== id)
+        prevFormasPago.filter((formaPago) => formaPago.id !== id)
       );
     } catch (error) {
       console.error('Error al eliminar una forma de pago:', error);

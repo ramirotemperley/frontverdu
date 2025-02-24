@@ -26,7 +26,7 @@ const ResumenVenta = ({
         >
           <option value="">Seleccionar vendedor</option>
           {vendedores.map((vendedor) => (
-            <option key={vendedor._id} value={vendedor.nombre}>
+            <option key={vendedor.id} value={vendedor.nombre}>
               {vendedor.nombre}
             </option>
           ))}

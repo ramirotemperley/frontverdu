@@ -22,13 +22,13 @@ function Tickets() {
           </thead>
           <tbody>
             {tickets.map((ticket) => (
-              <tr key={ticket._id}>
-                {/* Aquí asumo que en el backend la venta tiene un campo _id */}
-                {/* Si estabas usando id con Date.now(), ajústalo a _id o el que el backend use */}
-                <td>{ticket._id}</td>
+              <tr key={ticket.id}>
+                {/* Aquí asumo que en el backend la venta tiene un campo id */}
+                {/* Si estabas usando id con Date.now(), ajústalo a id o el que el backend use */}
+                <td>{ticket.id}</td>
                 <td>{new Date(ticket.fecha).toLocaleString()}</td>
                 <td>{ticket.vendedor || 'N/A'}</td>
-                <td>${ticket.totalVenta.toFixed(2)}</td>
+                <td>${Number(ticket.totalVenta).toFixed(2)}</td>
                 {/* Usa totalVenta en vez de total */}
                 <td>{ticket.formaPago}</td>
               </tr>
