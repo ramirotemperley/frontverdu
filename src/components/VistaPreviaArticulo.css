@@ -17,3 +17,28 @@
 .vista-previa-value {
   font-weight: bold;
 }
+.visor-cadena {
+  /* El contenedor con direction: rtl */
+  width: 100%;
+  margin-bottom: 15px;
+  background: #eee;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 2em;
+  color: #333;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  /* Para truncar la parte izquierda: */
+  white-space: nowrap;    /* No hace salto de línea */
+  overflow: hidden;       /* Oculta el texto que se sale */
+  text-overflow: ellipsis;/* Muestra “…” si querés, aunque en rtl es tricky */
+  direction: rtl;         /* Forzamos truncar desde la izquierda */
+}
+
+.visor-cadena-inner {
+  /* Volvemos el texto a dirección normal para que no aparezca invertido */
+  direction: ltr;
+  display: inline-block;
+  /* Podés también poner padding para separarlo un poco */
+}

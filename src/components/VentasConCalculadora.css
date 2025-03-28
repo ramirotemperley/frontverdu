@@ -1,0 +1,157 @@
+/* --------- CONTENEDOR PRINCIPAL --------- */
+.ventas-con-calculadora {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* --------- FILA DE TOTALES (arriba) --------- */
+  .totales-fila {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 1.6em;
+    font-weight: bold;
+    padding: 15px 10px;
+    background: #f9f9f9;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  .item-total {
+    flex: 1;
+    text-align: center;
+  }
+  
+  /* --------- VISOR DE CADENA (expresión) --------- */
+  .visor-cadena {
+    width: 100%;
+    margin-bottom: 15px;
+    background: #eee;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: right;
+    font-size: 2em;
+    color: #333;
+    min-height: 1.2em;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* --------- SECCIÓN INPUT PRINCIPAL --------- */
+  .input-section {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .input-principal {
+    font-size: 1.8em;
+    padding: 10px;
+    text-align: center;
+    border: 2px solid #bbb;
+    border-radius: 8px;
+    width: 50%;
+    max-width: 400px;
+  }
+  
+  .btn-agregar,
+  .btn-modal {
+    font-size: 1.4em;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Botón de agregar ( + ) */
+  .btn-agregar {
+    background: #007bff;
+    color: white;
+  }
+  
+  /* Botón de artículos ( / ) */
+  .btn-modal {
+    background: #28a745;
+    color: white;
+  }
+  
+  /* --------- LISTA DE ARTÍCULOS --------- */
+  .lista-articulos {
+    background: #fafafa;
+    padding: 10px 15px;
+    border-radius: 6px;
+  }
+  
+  .lista-vacia {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+  }
+  
+  .item-ticket {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ccc;
+    font-size: 1.1em;
+  }
+  
+  .item-ticket:last-child {
+    border-bottom: none;
+  }
+  
+  /* --------- SECCIÓN FINAL (FORMAS DE PAGO + BOTONES) --------- */
+  .finalizar-venta {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .formas-pago {
+    margin-bottom: 10px;
+  }
+  
+  .finalizar-venta button {
+    margin: 5px;
+    padding: 10px 16px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  /* Forma de pago seleccionada */
+  .seleccionada {
+    background: #007bff !important;
+    color: #fff !important;
+  }
+  
+  /* Botón de finalizar venta */
+  .btn-finalizar {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  /* Botón de limpiar lista */
+  .btn-limpiar {
+    background: #dc3545;
+    color: #fff;
+    margin-left: 10px;
+  }
+  .totales-fila {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 2em;
+    font-weight: bold;
+    padding: 15px 10px;
+    background: #f9f9f9;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
