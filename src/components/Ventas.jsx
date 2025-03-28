@@ -246,22 +246,18 @@ function Ventas() {
 
   useEffect(() => {
     const handleKeyDownGlobal = (e) => {
-      if (e.code === 'F9') { // Siguiente vendedor
+      if (e.code === 'NumpadDivide') { // Este es el nombre del botón "/"
         e.preventDefault();
         const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
         const nuevoIndex = (indexActual + 1) % usuarios.length;
         setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
-      } else if (e.code === 'F8') { // Vendedor anterior
-        e.preventDefault();
-        const indexActual = usuarios.findIndex(u => u.nombre === vendedorSeleccionado);
-        const nuevoIndex = (indexActual - 1 + usuarios.length) % usuarios.length;
-        setVendedorSeleccionado(usuarios[nuevoIndex].nombre);
       }
     };
+  
     window.addEventListener('keydown', handleKeyDownGlobal);
     return () => window.removeEventListener('keydown', handleKeyDownGlobal);
   }, [usuarios, vendedorSeleccionado]);
-
+  
   useEffect(() => {
     const busquedaInput = document.getElementById('busqueda-input');
     if (busquedaInput) {

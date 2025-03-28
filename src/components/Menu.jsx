@@ -32,7 +32,10 @@ function Menu() {
             <Link to="/tickets" onClick={() => setIsOpen(false)}>Tickets</Link>
           </li>
           <li>
-            <Link to="/usuarios" onClick={() => setIsOpen(false)}>Usuarios</Link> {/* Nueva sección */}
+            <Link to="/usuarios" onClick={() => setIsOpen(false)}>Usuarios</Link>
+          </li>
+          <li>
+            <Link to="/calculadora" onClick={() => setIsOpen(false)}>Nueva Calculadora</Link>
           </li>
         </ul>
       </div>
