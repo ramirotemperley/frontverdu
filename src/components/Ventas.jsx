@@ -375,16 +375,19 @@ const handleFinalizarVenta = async () => {
     const response = await axios.post('http://localhost:4000/ventas', nuevoTicket);
     console.log('Venta creada en el backend:', response.data);
 
-    const newVenta = {
-      id: response.data.ventaId,
-      totalVenta: nuevoTicket.totalVenta,
-      vendedorId: nuevoTicket.vendedorId,
-      vendedor: vendedorActual.nombre, // agregamos el nombre del vendedor
-      formaPagoId: nuevoTicket.formaPagoId,
-      fecha: nuevoTicket.fecha,
-      articulos: nuevoTicket.articulos,
-    };
-    
+    const formaPagoObj = formasPago.find(fp => fp.id === nuevoTicket.formaPagoId);
+
+const newVenta = {
+  id: response.data.ventaId,
+  totalVenta: nuevoTicket.totalVenta,
+  vendedorId: nuevoTicket.vendedorId,
+  vendedor: vendedorActual.nombre,
+  formaPagoId: nuevoTicket.formaPagoId,
+  formaPago: formaPagoObj ? formaPagoObj.nombre : 'N/A',
+  fecha: nuevoTicket.fecha,
+  articulos: nuevoTicket.articulos,
+};
+
 
     setTickets((prev) => [...prev, newVenta]);
     limpiarVentas(vendedorSeleccionado);
