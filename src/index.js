@@ -1,9 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import App from './App';
-import './icons'; // Importa la configuración de Font Awesome
+import './index.css';
+import { ToastContainer } from 'react-toastify';
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('root')
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+    <ToastContainer />
+  </React.StrictMode>
 );

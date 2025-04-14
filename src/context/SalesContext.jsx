@@ -4,35 +4,41 @@ import React, { createContext, useState } from 'react';
 export const SalesContext = createContext();
 
 export const SalesProvider = ({ children }) => {
-  // Guardamos las ventas en un objeto donde cada clave es el nombre (o id) del vendedor.
   const [ventasPorVendedor, setVentasPorVendedor] = useState({});
 
-  // Función para agregar un artículo a la venta de un vendedor
   const agregarArticulo = (vendedor, articulo) => {
-    setVentasPorVendedor(prevState => {
-      const ventasActuales = prevState[vendedor] || [];
-      return {
-        ...prevState,
-        [vendedor]: [...ventasActuales, articulo]
-      };
+    console.log("SalesContext > agregarArticulo => vendedor =", vendedor, "articulo =", articulo);
+    setVentasPorVendedor(prev => {
+      const ventasActuales = prev[vendedor] || [];
+      const nuevaLista = [...ventasActuales, articulo];
+      const nuevoEstado = { ...prev, [vendedor]: nuevaLista };
+      console.log("SalesContext > nuevoObjeto =>", nuevoEstado);
+      return nuevoEstado;
     });
   };
 
-  // Función para obtener la venta de un vendedor
   const obtenerVentas = (vendedor) => {
+    console.log("SalesContext > obtenerVentas => vendedor =", vendedor);
+    console.log("ventasPorVendedor actual:", ventasPorVendedor);
     return ventasPorVendedor[vendedor] || [];
   };
 
-  // Función para limpiar la venta de un vendedor (al finalizar la venta, por ejemplo)
   const limpiarVentas = (vendedor) => {
-    setVentasPorVendedor(prevState => ({
-      ...prevState,
-      [vendedor]: []
-    }));
+    console.log("SalesContext > limpiarVentas => vendedor =", vendedor);
+    setVentasPorVendedor(prev => {
+      const nuevoEstado = { ...prev, [vendedor]: [] };
+      console.log("SalesContext > limpiarVentas => nuevoObjeto =", nuevoEstado);
+      return nuevoEstado;
+    });
   };
 
   return (
-    <SalesContext.Provider value={{ ventasPorVendedor, agregarArticulo, obtenerVentas, limpiarVentas }}>
+    <SalesContext.Provider value={{
+      agregarArticulo,
+      obtenerVentas,
+      limpiarVentas,
+      ventasPorVendedor  // 🔁 Lo exponemos para que el componente escuche los cambios
+    }}>
       {children}
     </SalesContext.Provider>
   );

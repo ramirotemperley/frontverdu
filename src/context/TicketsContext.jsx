@@ -11,8 +11,6 @@ export const TicketsProvider = ({ children }) => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        // Aquí realizamos el GET a /ventas que ya está modificado en el backend
-        // para devolver solo las últimas 10.
         const response = await axios.get('http://localhost:4000/ventas');
         setTickets(response.data);
         setCargando(false);
@@ -21,12 +19,25 @@ export const TicketsProvider = ({ children }) => {
         setCargando(false);
       }
     };
-
     fetchTickets();
   }, []);
 
+  // Esta función se encarga de POSTear la venta y luego de GET para refrescar la lista de tickets.
+  const addTicket = async (nuevoTicket) => {
+    try {
+      // Enviamos la venta al backend
+      await axios.post('http://localhost:4000/ventas', nuevoTicket);
+
+      // Luego, refrescamos la lista de tickets:
+      const response = await axios.get('http://localhost:4000/ventas');
+      setTickets(response.data);
+    } catch (error) {
+      console.error('Error al agregar el ticket:', error.response ? error.response.data : error.message);
+    }
+  };
+
   return (
-    <TicketsContext.Provider value={{ tickets, setTickets, cargando }}>
+    <TicketsContext.Provider value={{ tickets, setTickets, addTicket, cargando }}>
       {children}
     </TicketsContext.Provider>
   );
