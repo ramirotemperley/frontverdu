@@ -1,10 +1,32 @@
-// src/components/Tickets.jsx
 import React, { useContext } from 'react';
 import { TicketsContext } from '../context/TicketsContext';
+import { UsuariosContext } from '../context/UsuariosContext';
+import { FormasPagoContext } from '../context/FormasPagoContext';
 import './Tickets.css';
 
 function Tickets() {
   const { tickets } = useContext(TicketsContext);
+  const { usuarios } = useContext(UsuariosContext);
+  const { formasPago } = useContext(FormasPagoContext);
+
+  // Función para buscar el nombre del vendedor a partir del vendedorId
+  const getVendedorNombre = (vendedorId) => {
+    const vendedor = usuarios.find(u => u.id === vendedorId);
+    return vendedor ? vendedor.nombre : 'N/A';
+  };
+
+  // Función para buscar el nombre de la forma de pago a partir del formaPagoId
+  const getFormaPagoNombre = (formaPagoId) => {
+    const forma = formasPago.find(fp => fp.id === formaPagoId);
+    return forma ? forma.nombre : '';
+  };
+
+  // Ayuda a formatear la fecha. Si la fecha no viene en un formato válido, podrías 
+  // revisar el formato que retorna el backend o usar alguna librería (ej. date-fns o moment.js)
+  const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleString();
+  };
 
   return (
     <div className="tickets">
@@ -23,14 +45,11 @@ function Tickets() {
           <tbody>
             {tickets.map((ticket) => (
               <tr key={ticket.id}>
-                {/* Aquí asumo que en el backend la venta tiene un campo id */}
-                {/* Si estabas usando id con Date.now(), ajústalo a id o el que el backend use */}
                 <td>{ticket.id}</td>
-                <td>{new Date(ticket.fecha).toLocaleString()}</td>
-                <td>{ticket.vendedor || 'N/A'}</td>
+                <td>{ticket.fecha ? formatFecha(ticket.fecha) : 'N/A'}</td>
+                <td>{getVendedorNombre(ticket.vendedorId)}</td>
                 <td>${Number(ticket.totalVenta).toFixed(2)}</td>
-                {/* Usa totalVenta en vez de total */}
-                <td>{ticket.formaPago}</td>
+                <td>{getFormaPagoNombre(ticket.formaPagoId)}</td>
               </tr>
             ))}
           </tbody>

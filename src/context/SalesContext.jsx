@@ -7,28 +7,31 @@ export const SalesProvider = ({ children }) => {
   const [ventasPorVendedor, setVentasPorVendedor] = useState({});
 
   const agregarArticulo = (vendedor, articulo) => {
-    console.log("SalesContext > agregarArticulo => vendedor =", vendedor, "articulo =", articulo);
     setVentasPorVendedor(prev => {
       const ventasActuales = prev[vendedor] || [];
       const nuevaLista = [...ventasActuales, articulo];
-      const nuevoEstado = { ...prev, [vendedor]: nuevaLista };
-      console.log("SalesContext > nuevoObjeto =>", nuevoEstado);
-      return nuevoEstado;
+      return { ...prev, [vendedor]: nuevaLista };
     });
   };
 
   const obtenerVentas = (vendedor) => {
-    console.log("SalesContext > obtenerVentas => vendedor =", vendedor);
-    console.log("ventasPorVendedor actual:", ventasPorVendedor);
     return ventasPorVendedor[vendedor] || [];
   };
 
   const limpiarVentas = (vendedor) => {
-    console.log("SalesContext > limpiarVentas => vendedor =", vendedor);
+    setVentasPorVendedor(prev => ({
+      ...prev,
+      [vendedor]: []
+    }));
+  };
+
+  // Nueva función para remover el último artículo ingresado
+  const removerUltimoArticulo = (vendedor) => {
     setVentasPorVendedor(prev => {
-      const nuevoEstado = { ...prev, [vendedor]: [] };
-      console.log("SalesContext > limpiarVentas => nuevoObjeto =", nuevoEstado);
-      return nuevoEstado;
+      const ventasActuales = prev[vendedor] || [];
+      if (ventasActuales.length === 0) return prev; // Nada que remover
+      const nuevaLista = ventasActuales.slice(0, -1); // Remueve el último elemento
+      return { ...prev, [vendedor]: nuevaLista };
     });
   };
 
@@ -37,7 +40,8 @@ export const SalesProvider = ({ children }) => {
       agregarArticulo,
       obtenerVentas,
       limpiarVentas,
-      ventasPorVendedor  // 🔁 Lo exponemos para que el componente escuche los cambios
+      removerUltimoArticulo,  // Se expone la función para eliminar el último artículo
+      ventasPorVendedor
     }}>
       {children}
     </SalesContext.Provider>

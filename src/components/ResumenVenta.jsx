@@ -1,3 +1,4 @@
+// ResumenVenta.jsx
 import './ResumenVenta.css';
 
 const ResumenVenta = ({
