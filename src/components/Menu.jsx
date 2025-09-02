@@ -19,9 +19,7 @@ function Menu() {
           ☰
         </div>
         <ul className={`menu-links ${isOpen ? 'open' : ''}`}>
-          <li>
-            <Link to="/" onClick={() => setIsOpen(false)}>Ventas</Link>
-          </li>
+          
           <li>
             <Link to="/articulos" onClick={() => setIsOpen(false)}>Artículos</Link>
           </li>
@@ -35,8 +33,10 @@ function Menu() {
             <Link to="/usuarios" onClick={() => setIsOpen(false)}>Usuarios</Link>
           </li>
           <li>
-            <Link to="/calculadora" onClick={() => setIsOpen(false)}>Nueva Calculadora</Link>
+            <Link to="/calculadora" onClick={() => setIsOpen(false)}>Calculadora</Link>
           </li>
+          
+
         </ul>
       </div>
     </nav>

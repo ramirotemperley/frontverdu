@@ -12,6 +12,10 @@ import GestionFormasPago from './components/GestionFormasPago';
 import Tickets from './components/Tickets';
 import Usuarios from './components/Usuarios';
 import VentasConCalculadora from './components/VentasConCalculadora'; 
+import InformeVentas from './components/InformeVentas';
+
+
+
 import './App.css';
 
 function App() {
@@ -31,6 +35,9 @@ function App() {
                   <Route path="/tickets" element={<Tickets />} />
                   <Route path="/usuarios" element={<Usuarios />} />
                   <Route path="/calculadora" element={<VentasConCalculadora />} />
+                  <Route path="/informes" element={<InformeVentas />} />
+
+                  
                 </Routes>
               </Router>
             </SalesProvider>

@@ -9,7 +9,7 @@ export const FormasPagoProvider = ({ children }) => {
   useEffect(() => {
     const fetchFormasPago = async () => {
       try {
-        const response = await fetch('http://localhost:4000/formas-pago');
+        const response = await fetch('http://192.168.0.102:4000/formas-pago');
         const data = await response.json();
         setFormasPago(data);
       } catch (error) {
@@ -23,7 +23,7 @@ export const FormasPagoProvider = ({ children }) => {
   // Función para agregar una forma de pago
   const addFormaPago = async (codigo, nombre) => {
     try {
-      const response = await fetch('http://localhost:4000/formas-pago', {
+      const response = await fetch('http://192.168.0.102:4000/formas-pago', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const FormasPagoProvider = ({ children }) => {
   // Función para eliminar una forma de pago
   const deleteFormaPago = async (id) => {
     try {
-      await fetch(`http://localhost:4000/formas-pago/${id}`, {
+      await fetch(`http://192.168.0.102:4000/formas-pago/${id}`, {
         method: 'DELETE',
       });
 

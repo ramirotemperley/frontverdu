@@ -39,7 +39,7 @@ function GestionFormasPago() {
 
   const handleGuardarEdicion = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/formas-pago/${formaPagoEditada.id}`, {
+      const response = await fetch(`http://192.168.0.102:4000/formas-pago/${formaPagoEditada.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -12,7 +12,7 @@ export const ArticulosProvider = ({ children }) => {
   useEffect(() => {
     const fetchArticulos = async () => {
       try {
-        const response = await fetch('http://localhost:4000/articulos');
+        const response = await fetch('http://192.168.0.102:4000/articulos');
         if (!response.ok) {
           throw new Error('Error al cargar los artículos');
         }
@@ -30,7 +30,7 @@ export const ArticulosProvider = ({ children }) => {
   // 2. Agregar un artículo
   const agregarArticulo = async ({ codigo, nombre }) => {
     try {
-      const response = await fetch('http://localhost:4000/articulos', {
+      const response = await fetch('http://192.168.0.102:4000/articulos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ codigo, nombre }),
@@ -51,7 +51,7 @@ export const ArticulosProvider = ({ children }) => {
   // 3. Eliminar un artículo (usando 'id' en lugar de '_id')
   const eliminarArticulo = async (id) => {
     try {
-      const response = await fetch(`http://localhost:4000/articulos/${id}`, {
+      const response = await fetch(`http://192.168.0.102:4000/articulos/${id}`, {
         method: 'DELETE',
       });
 

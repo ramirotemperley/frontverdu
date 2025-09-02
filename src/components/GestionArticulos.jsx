@@ -33,7 +33,7 @@ function GestionArticulos() {
   const guardarEdicion = async () => {
     if (!articuloEditado) return;
     try {
-      const response = await fetch(`http://localhost:4000/articulos/${articuloEditado.id}`, {
+      const response = await fetch(`http://192.168.0.102:4000/articulos/${articuloEditado.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

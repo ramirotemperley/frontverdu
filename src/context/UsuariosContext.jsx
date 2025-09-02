@@ -9,7 +9,7 @@ export const UsuariosProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const response = await fetch('http://localhost:4000/usuarios');
+        const response = await fetch('http://192.168.0.102:4000/usuarios');
         if (!response.ok) throw new Error('Error al cargar usuarios');
         const data = await response.json();
         setUsuarios(data); // data será [{ id: 1, nombre: "Ramiro" }, ...]
@@ -24,7 +24,7 @@ export const UsuariosProvider = ({ children }) => {
 
   const addUsuario = async (usuario) => {
     try {
-      const response = await fetch('http://localhost:4000/usuarios', {
+      const response = await fetch('http://192.168.0.102:4000/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(usuario),
@@ -46,7 +46,7 @@ export const UsuariosProvider = ({ children }) => {
 
   const deleteUsuario = async (id) => {
     try {
-      const response = await fetch(`http://localhost:4000/usuarios/${id}`, {
+      const response = await fetch(`http://192.168.0.102:4000/usuarios/${id}`, {
         method: 'DELETE'
       });
 

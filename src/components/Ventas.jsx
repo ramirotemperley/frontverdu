@@ -372,7 +372,7 @@ const handleFinalizarVenta = async () => {
   console.log("Nuevo ticket a enviar:", nuevoTicket);
 
   try {
-    const response = await axios.post('http://localhost:4000/ventas', nuevoTicket);
+    const response = await axios.post('http://192.168.0.102:4000/ventas', nuevoTicket);
     console.log('Venta creada en el backend:', response.data);
 
     const formaPagoObj = formasPago.find(fp => fp.id === nuevoTicket.formaPagoId);
